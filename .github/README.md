@@ -14,32 +14,8 @@ This repository uses GitHub Actions for automated Terraform validation, linting,
 2. ⚙️ **Init** - Initializes Terraform (without backend)
 3. 🤖 **Validate** - Checks configuration syntax and consistency
 4. 🔍 **TFLint** - Runs AWS-specific linting rules
-5. 📖 **Plan** - Generates execution plan (no AWS credentials needed!)
-6. 💬 **PR Comment** - Posts results with plan output as PR comment
-7. 📊 **Summary** - Creates job summary
-
-**Note**: `terraform plan` runs **without AWS credentials** because we have no `data` sources that query AWS APIs. Plan calculates changes based purely on code.
-
-## Required Secrets
-
-**None currently required!** 🎉
-
-The CI workflow runs `terraform plan` **without AWS credentials** because:
-- ✅ No `data` sources that query AWS APIs
-- ✅ Plan calculates changes based on code only
-- ✅ No state refresh (using `-backend=false` on init)
-
-### When You'll Need AWS Credentials
-
-If you add `data` sources that query AWS (e.g., `data "aws_ami"`, `data "aws_vpc"`), you'll need to:
-
-1. Add secrets to GitHub:
-   ```bash
-   AWS_ACCESS_KEY_ID: AKIA...
-   AWS_SECRET_ACCESS_KEY: <secret-key>
-   ```
-
-2. Add the AWS credentials configuration step before plan in the workflow
+5. 💬 **PR Comment** - Posts results with plan output as PR comment
+6. 📊 **Summary** - Creates job summary
 
 ## Local Testing
 
@@ -76,7 +52,6 @@ The `.tflint.hcl` file configures:
 The workflow requires:
 - `contents: read` - Read repository code
 - `pull-requests: write` - Comment on PRs
-- `id-token: write` - For OIDC (future enhancement)
 
 ## Future Enhancements
 
@@ -88,12 +63,6 @@ The workflow requires:
 - [ ] Terraform docs generation
 
 ## Troubleshooting
-
-### "No AWS credentials found"
-Ensure secrets are set correctly in GitHub repository settings.
-
-### "Plan failed: Unauthorized"
-Check that terraform-deployer IAM policy includes required permissions.
 
 ### "Format check failed"
 Run `terraform fmt -recursive` locally and commit changes.
