@@ -69,12 +69,12 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
 
 ## Module Dependencies
 
-1. `network` - VPC, subnets, security groups (created first)
-2. `iam` - Task execution and task roles (TODO)
-3. `ecr` - Container registry (TODO)
-4. `ecs` - Fargate cluster and service (TODO)
-5. `alb` - Application Load Balancer (TODO)
-6. `route53` - DNS configuration (TODO)
+1. `networking` - VPC, subnets, security groups (created first)
+2. `iam` - Task execution and task roles
+3. `ecr` - Container registry
+4. `ecs` - Fargate cluster and service
+5. `alb` - Application Load Balancer
+6. `route53` - DNS configuration
 
 ## Naming Convention
 
