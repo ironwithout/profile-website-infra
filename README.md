@@ -76,27 +76,6 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
 5. `alb` - Application Load Balancer (TODO)
 6. `route53` - DNS configuration (TODO)
 
-## Backend Setup
-
-Before first use, create backend resources manually:
-
-```bash
-# Create S3 bucket for state
-aws s3 mb s3://your-terraform-state-bucket --region us-east-1
-aws s3api put-bucket-versioning \
-  --bucket your-terraform-state-bucket \
-  --versioning-configuration Status=Enabled
-
-# Create DynamoDB table for locking
-aws dynamodb create-table \
-  --table-name terraform-state-lock \
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
-  --key-schema AttributeName=LockID,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST
-```
-
-Then uncomment and configure `backend.tf`.
-
 ## Naming Convention
 
 All resources follow: `${project_name}-${environment}-<resource-type>`
