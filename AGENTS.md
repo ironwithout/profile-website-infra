@@ -30,7 +30,7 @@ Examples:
 Use lowercase with hyphens (kebab-case). Avoid underscores in resource names.
 
 ## Critical Module Dependencies
-1. **networking** must be created first (VPC, subnets, security groups)
+1. **network** must be created first (VPC, subnets, security groups)
 2. **iam** roles must exist before **ecs** (task execution + task roles)
 3. **ecr** repository must exist before **ecs** task definitions
 4. **alb** target group created before **ecs** service (load balancer attachment)
