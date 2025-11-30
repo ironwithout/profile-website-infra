@@ -24,6 +24,11 @@ aws iam create-policy-version \
   --policy-arn arn:aws:iam::ACCOUNT_ID:policy/TerraformNetworkingPolicy \
   --policy-document file://terraform-deployer-networking.json \
   --set-as-default
+
+# Attach policies to the terraform-deployer user
+aws iam attach-user-policy \
+  --user-name terraform-deployer \
+  --policy-arn arn:aws:iam::accountid:policy/TerraformNetworkingPolicy
 ```
 
 ## Future Policies
