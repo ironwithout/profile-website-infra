@@ -1,4 +1,4 @@
-# Networking Module
+# Network Module
 
 ## Overview
 This module creates the VPC infrastructure for ECS Fargate deployment, including VPC, subnets, internet gateway, route tables, and security groups.
@@ -14,8 +14,8 @@ This module creates the VPC infrastructure for ECS Fargate deployment, including
 
 ## Usage
 ```hcl
-module "networking" {
-  source = "./modules/networking"
+module "network" {
+  source = "./modules/network"
 
   project_name       = "myapp"
   environment        = "dev"

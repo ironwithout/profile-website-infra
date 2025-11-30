@@ -1,4 +1,4 @@
-# Networking Module
+# Network Module
 # Creates VPC, subnets, internet gateway, and security groups
 
 terraform {
