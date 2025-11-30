@@ -1,8 +1,8 @@
 # Root Terraform configuration
 # Orchestrates modules for ECS Fargate deployment
 
-module "networking" {
-  source = "./modules/networking"
+module "network" {
+  source = "./modules/network"
 
   project_name       = var.project_name
   environment        = var.environment

@@ -20,7 +20,7 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
 ├── versions.tf             # Provider versions
 ├── backend.tf              # S3 backend config
 ├── modules/
-│   └── networking/         # VPC, subnets, security groups
+│   └── network/         # VPC, subnets, security groups
 │       ├── main.tf
 │       ├── variables.tf
 │       ├── outputs.tf
@@ -46,7 +46,7 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
 2. **Initialize Terraform**:
    ```bash
    cd ../..
-   terraform init
+   terraform init -backend-config=environments/dev/backend.hcl
    ```
 
 3. **Validate configuration**:

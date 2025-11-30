@@ -11,13 +11,15 @@ This directory contains environment-specific configuration for the **production*
 
 2. Edit `terraform.tfvars` with your specific values (project name, region, etc.)
 
-3. Initialize and apply:
+3. Initialize with prod backend and apply:
    ```bash
    cd ../..  # Return to root
-   terraform init
+   terraform init -backend-config=environments/prod/backend.hcl
    terraform plan -var-file=environments/prod/terraform.tfvars
    terraform apply -var-file=environments/prod/terraform.tfvars
    ```
+
+**Note**: Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
 
 ## Configuration Notes
 
