@@ -167,7 +167,7 @@ tflint --recursive
 ## Documentation
 
 - **Project docs**: [docs/README.md](docs/README.md) - See full list of available guides
-- **AI agent guide**: [.github/copilot-instructions.md](.github/copilot-instructions.md)
+- **AI agent guide**: [AGENTS.md](AGENTS.md)
 - **Module docs**: See each module's `README.md` and `iam-policy.json`
 
 ## License
