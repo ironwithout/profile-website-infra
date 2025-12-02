@@ -4,6 +4,15 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_account_id" {
+  description = "AWS account ID for validation (prevents deploying to wrong account)"
+  type        = string
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
+    error_message = "AWS account ID must be exactly 12 digits."
+  }
+}
+
 variable "project_name" {
   description = "Project name used for resource naming (lowercase, hyphens)"
   type        = string

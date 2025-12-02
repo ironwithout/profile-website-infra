@@ -1,6 +1,7 @@
 # Production Environment Configuration
 
-aws_region = "us-east-1"
+aws_account_id = "987654321098"
+aws_region     = "us-east-1"
 
 project_name = "myapp"
 environment  = "prod"
