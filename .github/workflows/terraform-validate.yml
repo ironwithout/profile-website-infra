@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   terraform-checks:
-    name: Terraform Validation & Plan
+    name: Terraform Validation
     runs-on: ubuntu-latest
     
     steps:

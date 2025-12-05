@@ -6,5 +6,14 @@ aws_region     = "us-east-1"
 project_name = "myapp"
 environment  = "prod"
 
+# Network
 vpc_cidr           = "10.0.0.0/16"
 availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+# ECR
+ecr_image_tag_mutability = "IMMUTABLE"
+ecr_scan_on_push         = true
+ecr_encryption_type      = "AES256"       # AES256 or KMS
+ecr_kms_key_arn          = "null"         # Only for KMS
+ecr_max_image_count      = 10             # Number of tagged images to retain
+ecr_untagged_image_days  = 3              # Days to keep untagged images

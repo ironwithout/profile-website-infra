@@ -19,18 +19,19 @@ module "network" {
 
   project_name       = "myapp"
   environment        = "dev"
+
   vpc_cidr           = "10.0.0.0/16"
   availability_zones = ["us-east-1a", "us-east-1b"]
 }
 ```
 
 ## Inputs
-| Name | Description | Type | Required |
-|------|-------------|------|----------|
-| project_name | Project name for resource naming | string | yes |
-| environment | Environment (dev/prod/staging) | string | yes |
-| vpc_cidr | CIDR block for VPC | string | yes |
-| availability_zones | List of AZs for subnet distribution | list(string) | yes |
+| Name | Description | Type |
+|------|-------------|------|
+| project_name | Project name for resource naming | string |
+| environment | Environment (dev/prod/staging) | string |
+| vpc_cidr | CIDR block for VPC | string |
+| availability_zones | List of AZs for subnet distribution | list(string) |
 
 ## Outputs
 | Name | Description |
