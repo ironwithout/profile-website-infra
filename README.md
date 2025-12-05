@@ -25,6 +25,7 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
 ├── main.tf                 # Root orchestration
 ├── variables.tf            # Root variables
 ├── outputs.tf              # Root outputs
+├── data.tf                 # Data sources
 ├── versions.tf             # Provider versions
 ├── backend.tf              # S3 backend config
 ├── docs/                   # Project documentation
