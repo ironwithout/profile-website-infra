@@ -25,27 +25,29 @@ CI/CD Pipeline → ECR Repository → ECS Fargate
 module "ecr" {
   source = "./modules/ecr"
 
-  project_name          = "myapp"
-  environment           = "dev"
-  image_tag_mutability  = "MUTABLE"
-  scan_on_push          = true
-  encryption_type       = "AES256"
-  max_image_count       = 30
-  untagged_image_days   = 7
+  project_name         = "myapp"
+  environment          = "dev"
+
+  image_tag_mutability = "MUTABLE"
+  scan_on_push         = true
+  encryption_type      = "AES256"
+  kms_key_arn          = null
+  max_image_count      = 30
+  untagged_image_days  = 7
 }
 ```
 
 ## Inputs
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| project_name | Project name for resource naming | string | - | yes |
-| environment | Environment (dev/prod/staging) | string | - | yes |
-| image_tag_mutability | Image tag mutability (MUTABLE/IMMUTABLE) | string | MUTABLE | no |
-| scan_on_push | Enable image scanning on push | bool | true | no |
-| encryption_type | Encryption type (AES256/KMS) | string | AES256 | no |
-| kms_key_arn | KMS key ARN (required if encryption_type=KMS) | string | null | no |
-| max_image_count | Max tagged images to retain | number | 30 | no |
-| untagged_image_days | Days to retain untagged images | number | 7 | no |
+| Name | Description | Type |
+|------|-------------|------|
+| project_name | Project name for resource naming | string |
+| environment | Environment (dev/prod/staging) | string |
+| image_tag_mutability | Image tag mutability (MUTABLE/IMMUTABLE) | string |
+| scan_on_push | Enable image scanning on push | bool |
+| encryption_type | Encryption type (AES256/KMS) | string |
+| kms_key_arn | KMS key ARN (required if encryption_type=KMS) | string |
+| max_image_count | Max tagged images to retain | number |
+| untagged_image_days | Days to retain untagged images | number |
 
 ## Outputs
 | Name | Description |
