@@ -1,6 +1,6 @@
 # Production Environment
 
-This directory contains environment-specific configuration for the **production** environment.
+Environment-specific configuration for the production environment.
 
 ## Setup
 
@@ -9,7 +9,7 @@ This directory contains environment-specific configuration for the **production*
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-2. Edit `terraform.tfvars` with your specific values (project name, region, etc.)
+2. Edit `terraform.tfvars` with specific values (project name, region, etc.)
 
 3. Initialize with prod backend and apply:
    ```bash
@@ -19,9 +19,9 @@ This directory contains environment-specific configuration for the **production*
    terraform apply -var-file=environments/prod/terraform.tfvars
    ```
 
-**Note**: Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
+Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
 
-## Configuration Notes
+## Configuration
 
 - **High Availability**: Uses 3 AZs, multiple task replicas, standard Fargate
 - **Logging**: 90-day CloudWatch log retention
@@ -29,5 +29,5 @@ This directory contains environment-specific configuration for the **production*
 
 ## Important
 
-⚠️ Never commit `terraform.tfvars` - it's gitignored and may contain sensitive values.
+⚠️ `terraform.tfvars` is gitignored and must not be committed (may contain sensitive values).
 ⚠️ Always review `terraform plan` output before applying to production.

@@ -1,11 +1,15 @@
 # Network Module
 
-## Overview
-This module creates the VPC infrastructure for ECS Fargate deployment, including VPC, subnets, internet gateway, route tables, and security groups.
+Creates VPC infrastructure for ECS Fargate deployment.
 
-## Architecture
-- **VPC**: Configurable CIDR block with DNS support enabled
-- **Public Subnets**: Internet-facing subnets for ALB (auto-assign public IP)
+## Overview
+
+This module creates the VPC infrastructure including VPC, subnets, internet gateway, route tables, and security groups.
+
+## Implementation
+
+- **VPC**: Configured CIDR block with DNS support enabled
+- **Public Subnets**: Internet-facing subnets for ALB with auto-assigned public IPs
 - **Private Subnets**: Internal subnets for ECS tasks (optional, can use public for cost savings)
 - **Internet Gateway**: Provides internet access to public subnets
 - **Security Groups**: 
@@ -45,7 +49,7 @@ module "network" {
 | internet_gateway_id | Internet Gateway ID |
 
 ## Security Pattern
-Uses **source-based security group referencing** instead of CIDR blocks for internal traffic (ALB → ECS), following AWS best practices.
+Uses source-based security group referencing instead of CIDR blocks for internal traffic (ALB → ECS), following AWS best practices.
 
 ## Cost Optimization
-Public subnets with auto-assign public IP enabled to avoid NAT Gateway costs for dev/staging environments.
+Public subnets configured with auto-assign public IP to avoid NAT Gateway costs for dev/staging environments.

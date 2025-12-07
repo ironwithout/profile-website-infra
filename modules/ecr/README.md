@@ -1,13 +1,17 @@
 # ECR Module
 
-## Overview
-This module creates an AWS Elastic Container Registry (ECR) repository for storing Docker container images. It includes lifecycle policies for image retention, security scanning, and encryption.
+Creates an AWS Elastic Container Registry (ECR) repository for storing Docker container images.
 
-## Features
+## Overview
+
+This module creates an ECR repository with lifecycle policies for image retention, security scanning, and encryption.
+
+## Implementation
+
 - **Image Scanning**: Automated vulnerability scanning on image push
 - **Lifecycle Policies**: 
-  - Retain last N tagged images (configurable)
-  - Expire untagged images after X days (configurable)
+  - Retains last N tagged images (configurable)
+  - Expires untagged images after X days (configurable)
 - **Encryption**: AES256 or KMS encryption at rest
 - **Tag Mutability**: Configurable (MUTABLE or IMMUTABLE)
 
@@ -60,18 +64,16 @@ module "ecr" {
 ## Lifecycle Policy Details
 
 ### Tagged Images
-- Keeps the last `max_image_count` images with tags starting with "v" (e.g., v1.0.0)
-- Older images are automatically deleted
+Keeps the last `max_image_count` images with tags starting with "v" (e.g., v1.0.0). Older images are automatically deleted.
 
 ### Untagged Images
-- Expires after `untagged_image_days` days
-- Helps clean up intermediate build images
+Expires after `untagged_image_days` days. Helps clean up intermediate build images.
 
-## Security Best Practices
-1. **Image Scanning**: Enabled by default to detect vulnerabilities
-2. **Encryption**: AES256 encryption at rest (can upgrade to KMS)
-3. **Tag Immutability**: Consider IMMUTABLE for production to prevent tag overwrites
-4. **Access Control**: Use IAM policies for least-privilege access
+## Security Implementation
+- **Image Scanning**: Enabled by default to detect vulnerabilities
+- **Encryption**: AES256 encryption at rest (can be configured to use KMS)
+- **Tag Immutability**: Configurable per environment (IMMUTABLE recommended for production)
+- **Access Control**: IAM policies enforce least-privilege access
 
 ## IAM Requirements
 This module requires the following IAM permissions (see `iam-policy.json`):
@@ -100,11 +102,9 @@ docker pull <repository_url>:v1.0.0
 ```
 
 ## Cost Optimization
-- Lifecycle policies automatically remove old images to reduce storage costs
-- Untagged image expiration prevents accumulation of build artifacts
-- Default settings balance retention needs with cost efficiency
+Lifecycle policies automatically remove old images to reduce storage costs. Untagged image expiration prevents accumulation of build artifacts. Default settings balance retention needs with cost efficiency.
 
-## Environment-Specific Recommendations
+## Environment-Specific Configuration
 
 ### Development
 - `image_tag_mutability`: MUTABLE (allows tag overwrites)
@@ -115,4 +115,4 @@ docker pull <repository_url>:v1.0.0
 - `image_tag_mutability`: IMMUTABLE (prevents accidental overwrites)
 - `max_image_count`: 30-50 (retain more history)
 - `untagged_image_days`: 7-14 (allow time for investigation)
-- Consider KMS encryption for enhanced security
+- KMS encryption recommended for enhanced security
