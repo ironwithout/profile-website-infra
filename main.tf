@@ -22,3 +22,11 @@ module "ecr" {
   max_image_count      = var.ecr_max_image_count
   untagged_image_days  = var.ecr_untagged_image_days
 }
+
+module "iam" {
+  source = "./modules/iam"
+
+  project_name        = var.project_name
+  environment         = var.environment
+  ecr_repository_arns = [module.ecr.repository_arn]
+}
