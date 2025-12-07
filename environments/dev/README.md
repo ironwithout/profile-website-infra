@@ -1,6 +1,6 @@
 # Development Environment
 
-This directory contains environment-specific configuration for the **development** environment.
+Environment-specific configuration for the development environment.
 
 ## Setup
 
@@ -9,7 +9,7 @@ This directory contains environment-specific configuration for the **development
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-2. Edit `terraform.tfvars` with your specific values (project name, region, etc.)
+2. Edit `terraform.tfvars` with specific values (project name, region, etc.)
 
 3. Initialize with dev backend and apply:
    ```bash
@@ -19,14 +19,14 @@ This directory contains environment-specific configuration for the **development
    terraform apply -var-file=environments/dev/terraform.tfvars
    ```
 
-**Note**: Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
+Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
 
-## Configuration Notes
+## Configuration
 
-- **Cost Optimization**: Dev uses Fargate Spot, shorter log retention, minimal replicas
+- **Cost Optimization**: Uses Fargate Spot, shorter log retention, minimal replicas
 - **Network**: Uses public subnets with auto-assign public IP (no NAT Gateway)
-- **Secrets**: Store in SSM Parameter Store, reference in task definitions
+- **Secrets**: Stored in SSM Parameter Store, referenced in task definitions
 
 ## Important
 
-⚠️ Never commit `terraform.tfvars` - it's gitignored and may contain sensitive values.
+⚠️ `terraform.tfvars` is gitignored and must not be committed (may contain sensitive values).
