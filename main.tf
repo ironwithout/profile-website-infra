@@ -44,7 +44,5 @@ module "ecs" {
   task_role_arn             = module.iam.task_role_arn
   ecr_repository_url        = module.ecr.repository_url
   aws_region                = data.aws_region.current.name
-
-  # Pass the entire services map to the module
-  services = var.ecs_services
+  services                  = var.ecs_services
 }
