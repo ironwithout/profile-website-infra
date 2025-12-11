@@ -17,14 +17,14 @@ output "private_subnet_ids" {
 }
 
 # ECR outputs
-output "ecr_repository_url" {
-  description = "ECR repository URL for docker push/pull"
-  value       = module.ecr.repository_url
+output "ecr_repository_urls" {
+  description = "ECR repository URLs for docker push/pull"
+  value       = module.ecr.repository_urls
 }
 
-output "ecr_repository_name" {
-  description = "ECR repository name"
-  value       = module.ecr.repository_name
+output "ecr_repository_names" {
+  description = "ECR repository names"
+  value       = module.ecr.repository_names
 }
 
 # IAM outputs
