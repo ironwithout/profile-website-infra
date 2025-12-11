@@ -66,7 +66,7 @@ variable "ecs_services" {
     ecr_kms_key_arn          = string
     ecr_max_image_count      = number
     ecr_untagged_image_days  = number
-    
+
     # ECS Configuration
     container_name      = string
     container_port      = number
