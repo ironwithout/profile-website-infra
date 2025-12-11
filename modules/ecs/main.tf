@@ -10,24 +10,13 @@ terraform {
   }
 }
 
-# CloudWatch Log Group for ECS tasks
-# Pattern matches IAM policy: /ecs/${project_name}-${environment}
-resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.project_name}-${var.environment}"
-  retention_in_days = var.log_retention_days
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-logs"
-  }
-}
-
-# ECS Cluster
+# ECS Cluster (shared by all services)
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-${var.environment}-cluster"
 
   setting {
     name  = "containerInsights"
-    value = var.enable_container_insights ? "enabled" : "disabled"
+    value = var.enable_container_insights
   }
 
   tags = {
@@ -35,75 +24,93 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-# ECS Task Definition
-resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-${var.environment}"
+# CloudWatch Log Group for each service
+resource "aws_cloudwatch_log_group" "service" {
+  for_each = var.services
+
+  name              = "/ecs/${var.project_name}-${var.environment}/${each.key}"
+  retention_in_days = each.value.log_retention_days
+
+  tags = {
+    Name    = "${var.project_name}-${var.environment}-${each.key}-logs"
+    Service = each.key
+  }
+}
+
+# ECS Task Definition for each service
+resource "aws_ecs_task_definition" "service" {
+  for_each = var.services
+
+  family                   = "${var.project_name}-${var.environment}-${each.key}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = var.task_cpu
-  memory                   = var.task_memory
+  cpu                      = each.value.task_cpu
+  memory                   = each.value.task_memory
   execution_role_arn       = var.task_execution_role_arn
   task_role_arn            = var.task_role_arn
 
   container_definitions = jsonencode([
     {
-      name      = var.container_name
-      image     = "${var.ecr_repository_url}:${var.container_image_tag}"
+      name      = each.value.container_name
+      image     = "${var.ecr_repository_url}:${each.value.container_image_tag}"
       essential = true
 
       portMappings = [
         {
-          containerPort = var.container_port
+          containerPort = each.value.container_port
           protocol      = "tcp"
         }
       ]
 
-      environment = var.container_environment_variables
+      environment = each.value.container_environment_variables
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
+          "awslogs-group"         = aws_cloudwatch_log_group.service[each.key].name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
       }
 
       healthCheck = {
-        command     = var.health_check_command
-        interval    = var.health_check_interval
-        timeout     = var.health_check_timeout
-        retries     = var.health_check_retries
-        startPeriod = var.health_check_start_period
+        command     = each.value.health_check_command
+        interval    = each.value.health_check_interval
+        timeout     = each.value.health_check_timeout
+        retries     = each.value.health_check_retries
+        startPeriod = each.value.health_check_start_period
       }
     }
   ])
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-task"
+    Name    = "${var.project_name}-${var.environment}-${each.key}-task"
+    Service = each.key
   }
 }
 
-# ECS Service
-resource "aws_ecs_service" "app" {
-  name            = "${var.project_name}-${var.environment}-service"
+# ECS Service for each service
+resource "aws_ecs_service" "service" {
+  for_each = var.services
+
+  name            = "${var.project_name}-${var.environment}-${each.key}-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = var.desired_count
-  launch_type     = var.launch_type
+  task_definition = aws_ecs_task_definition.service[each.key].arn
+  desired_count   = each.value.desired_count
+  launch_type     = each.value.launch_type
 
   network_configuration {
-    subnets          = var.subnet_ids
+    subnets          = each.value.use_private_subnets ? var.private_subnet_ids : var.public_subnet_ids
     security_groups  = [var.ecs_security_group_id]
-    assign_public_ip = var.assign_public_ip
+    assign_public_ip = each.value.assign_public_ip
   }
 
-  deployment_maximum_percent         = var.deployment_maximum_percent
-  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
+  deployment_maximum_percent         = each.value.deployment_maximum_percent
+  deployment_minimum_healthy_percent = each.value.deployment_minimum_healthy_percent
 
   deployment_circuit_breaker {
-    enable   = var.enable_deployment_circuit_breaker
-    rollback = var.enable_deployment_rollback
+    enable   = each.value.enable_deployment_circuit_breaker
+    rollback = each.value.enable_deployment_rollback
   }
 
   # Note: Load balancer configuration will be added when ALB module is integrated
@@ -111,8 +118,8 @@ resource "aws_ecs_service" "app" {
   #   for_each = var.target_group_arn != null ? [1] : []
   #   content {
   #     target_group_arn = var.target_group_arn
-  #     container_name   = var.container_name
-  #     container_port   = var.container_port
+  #     container_name   = each.value.container_name
+  #     container_port   = each.value.container_port
   #   }
   # }
 
@@ -122,6 +129,7 @@ resource "aws_ecs_service" "app" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-service"
+    Name    = "${var.project_name}-${var.environment}-${each.key}-service"
+    Service = each.key
   }
 }

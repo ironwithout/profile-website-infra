@@ -15,37 +15,27 @@ output "cluster_name" {
   value       = aws_ecs_cluster.main.name
 }
 
-output "service_id" {
-  description = "ECS service ID"
-  value       = aws_ecs_service.app.id
+output "service_ids" {
+  description = "Map of service names to service IDs"
+  value       = { for k, v in aws_ecs_service.service : k => v.id }
 }
 
-output "service_name" {
-  description = "ECS service name"
-  value       = aws_ecs_service.app.name
+output "service_names" {
+  description = "Map of service names to service names"
+  value       = { for k, v in aws_ecs_service.service : k => v.name }
 }
 
-output "task_definition_arn" {
-  description = "Task definition ARN"
-  value       = aws_ecs_task_definition.app.arn
+output "task_definition_arns" {
+  description = "Map of service names to task definition ARNs"
+  value       = { for k, v in aws_ecs_task_definition.service : k => v.arn }
 }
 
-output "task_definition_family" {
-  description = "Task definition family"
-  value       = aws_ecs_task_definition.app.family
+output "task_definition_families" {
+  description = "Map of service names to task definition families"
+  value       = { for k, v in aws_ecs_task_definition.service : k => v.family }
 }
 
-output "task_definition_revision" {
-  description = "Task definition revision"
-  value       = aws_ecs_task_definition.app.revision
-}
-
-output "log_group_name" {
-  description = "CloudWatch log group name"
-  value       = aws_cloudwatch_log_group.ecs.name
-}
-
-output "log_group_arn" {
-  description = "CloudWatch log group ARN"
-  value       = aws_cloudwatch_log_group.ecs.arn
+output "log_group_names" {
+  description = "Map of service names to CloudWatch log group names"
+  value       = { for k, v in aws_cloudwatch_log_group.service : k => v.name }
 }

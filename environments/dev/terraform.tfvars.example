@@ -17,3 +17,41 @@ ecr_encryption_type      = "AES256"       # AES256 or KMS
 ecr_kms_key_arn          = "null"         # Only for KMS
 ecr_max_image_count      = 10             # Number of tagged images to retain
 ecr_untagged_image_days  = 3              # Days to keep untagged images
+
+# ECS Services Configuration
+enable_container_insights = false
+
+# Define multiple services as needed (api, worker, etc.)
+ecs_services = {
+  api = {
+    container_name  = "api"
+    container_port  = 3000
+    container_image_tag = "latest"
+    container_environment_variables = [
+      { name = "NODE_ENV", value = "development" },
+      { name = "LOG_LEVEL", value = "debug" }
+    ]
+    task_cpu                           = "256"
+    task_memory                        = "512"
+    desired_count                      = 1
+    launch_type                        = "FARGATE_SPOT"
+    assign_public_ip                   = true
+    use_private_subnets                = false
+    log_retention_days                 = 3
+    health_check_command               = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+    health_check_interval              = 30
+    health_check_timeout               = 5
+    health_check_retries               = 3
+    health_check_start_period          = 60
+    deployment_maximum_percent         = 200
+    deployment_minimum_healthy_percent = 100
+    enable_deployment_circuit_breaker  = true
+    enable_deployment_rollback         = true
+  }
+  # Uncomment to add more services:
+  # worker = {
+  #   container_name  = "worker"
+  #   container_port  = 8080
+  #   ...
+  # }
+}

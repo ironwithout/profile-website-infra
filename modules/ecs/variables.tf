@@ -15,26 +15,35 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["dev", "prod", "staging"], var.environment)
-    error_message = "Environment must be dev, prod, or staging."
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "Environment must be dev or prod."
+  }
+}
+
+variable "enable_container_insights" {
+  description = "Enable container insights"
+  type        = string
+
+  validation {
+    condition     = contains(["enabled", "disabled"], var.enable_container_insights)
+    error_message = "Container insights must be enabled or disabled."
   }
 }
 
 # Network Configuration
-variable "subnet_ids" {
-  description = "List of subnet IDs for ECS tasks"
+variable "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  type        = list(string)
+}
+
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs"
   type        = list(string)
 }
 
 variable "ecs_security_group_id" {
   description = "Security group ID for ECS tasks"
   type        = string
-}
-
-variable "assign_public_ip" {
-  description = "Assign public IP to ECS tasks (required if using public subnets without NAT)"
-  type        = bool
-  default     = true
 }
 
 # IAM Configuration
@@ -54,135 +63,38 @@ variable "ecr_repository_url" {
   type        = string
 }
 
-variable "container_image_tag" {
-  description = "Docker image tag to deploy"
-  type        = string
-  default     = "latest"
-}
-
-# Container Configuration
-variable "container_name" {
-  description = "Name of the container"
-  type        = string
-  default     = "app"
-}
-
-variable "container_port" {
-  description = "Port exposed by the container"
-  type        = number
-  default     = 3000
-}
-
-variable "container_environment_variables" {
-  description = "Environment variables for the container"
-  type = list(object({
-    name  = string
-    value = string
-  }))
-  default = []
-}
-
-# Task Configuration
-variable "task_cpu" {
-  description = "CPU units for the task (256, 512, 1024, 2048, 4096)"
-  type        = string
-  default     = "256"
-}
-
-variable "task_memory" {
-  description = "Memory for the task in MB (512, 1024, 2048, etc.)"
-  type        = string
-  default     = "512"
-}
-
-variable "desired_count" {
-  description = "Desired number of tasks"
-  type        = number
-  default     = 1
-}
-
-variable "launch_type" {
-  description = "Launch type (FARGATE or FARGATE_SPOT)"
-  type        = string
-  default     = "FARGATE"
-
-  validation {
-    condition     = contains(["FARGATE", "FARGATE_SPOT"], var.launch_type)
-    error_message = "Launch type must be FARGATE or FARGATE_SPOT."
-  }
-}
-
-# Health Check Configuration
-variable "health_check_command" {
-  description = "Health check command"
-  type        = list(string)
-  default     = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
-}
-
-variable "health_check_interval" {
-  description = "Health check interval in seconds"
-  type        = number
-  default     = 30
-}
-
-variable "health_check_timeout" {
-  description = "Health check timeout in seconds"
-  type        = number
-  default     = 5
-}
-
-variable "health_check_retries" {
-  description = "Health check retries"
-  type        = number
-  default     = 3
-}
-
-variable "health_check_start_period" {
-  description = "Health check start period in seconds"
-  type        = number
-  default     = 60
-}
-
-# Deployment Configuration
-variable "deployment_maximum_percent" {
-  description = "Maximum percent of tasks to run during deployment"
-  type        = number
-  default     = 200
-}
-
-variable "deployment_minimum_healthy_percent" {
-  description = "Minimum healthy percent during deployment"
-  type        = number
-  default     = 100
-}
-
-variable "enable_deployment_circuit_breaker" {
-  description = "Enable deployment circuit breaker"
-  type        = bool
-  default     = true
-}
-
-variable "enable_deployment_rollback" {
-  description = "Enable automatic rollback on deployment failure"
-  type        = bool
-  default     = true
-}
-
-# CloudWatch Logs
-variable "log_retention_days" {
-  description = "CloudWatch log retention in days"
-  type        = number
-  default     = 7
-}
-
-variable "enable_container_insights" {
-  description = "Enable CloudWatch Container Insights"
-  type        = bool
-  default     = false
-}
-
 # AWS Region
 variable "aws_region" {
   description = "AWS region for CloudWatch logs configuration"
   type        = string
+}
+
+# Services Configuration
+variable "services" {
+  description = "Map of ECS service configurations"
+  type = map(object({
+    container_name      = string
+    container_port      = number
+    container_image_tag = string
+    container_environment_variables = list(object({
+      name  = string
+      value = string
+    }))
+    task_cpu                           = string
+    task_memory                        = string
+    desired_count                      = number
+    launch_type                        = string
+    assign_public_ip                   = bool
+    use_private_subnets                = bool
+    log_retention_days                 = number
+    health_check_command               = list(string)
+    health_check_interval              = number
+    health_check_timeout               = number
+    health_check_retries               = number
+    health_check_start_period          = number
+    deployment_maximum_percent         = number
+    deployment_minimum_healthy_percent = number
+    enable_deployment_circuit_breaker  = bool
+    enable_deployment_rollback         = bool
+  }))
 }

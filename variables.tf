@@ -74,3 +74,46 @@ variable "ecr_untagged_image_days" {
   description = "Days to retain untagged ECR images before expiration"
   type        = number
 }
+
+# ECS configuration
+variable "enable_container_insights" {
+  description = "Enable container insights"
+  type        = string
+
+  validation {
+    condition     = contains(["enabled", "disabled"], var.enable_container_insights)
+    error_message = "Container insights must be enabled or disabled."
+  }
+}
+
+variable "ecs_services" {
+  description = "Map of ECS service configurations"
+  type = map(object({
+    container_name      = string
+    container_port      = number
+    container_image_tag = string
+    container_environment_variables = list(object({
+      name  = string
+      value = string
+    }))
+    task_cpu                           = string
+    task_memory                        = string
+    desired_count                      = number
+    launch_type                        = string
+    assign_public_ip                   = bool
+    use_private_subnets                = bool
+    log_retention_days                 = number
+    enable_container_insights          = bool
+    health_check_command               = list(string)
+    health_check_interval              = number
+    health_check_timeout               = number
+    health_check_retries               = number
+    health_check_start_period          = number
+    deployment_maximum_percent         = number
+    deployment_minimum_healthy_percent = number
+    enable_deployment_circuit_breaker  = bool
+    enable_deployment_rollback         = bool
+  }))
+
+  default = {}
+}
