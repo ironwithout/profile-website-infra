@@ -51,8 +51,9 @@ resource "aws_ecs_task_definition" "service" {
 
   container_definitions = jsonencode([
     {
-      name      = each.value.container_name
-      image     = "${var.ecr_repository_url}:${each.value.container_image_tag}"
+      name = each.value.container_name
+      # Use full URL if image tag contains ":", otherwise use ECR repository URL
+      image     = contains(split("", each.value.container_image_tag), ":") ? each.value.container_image_tag : "${var.ecr_repository_urls[each.key]}:${each.value.container_image_tag}"
       essential = true
 
       portMappings = [

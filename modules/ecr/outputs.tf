@@ -1,21 +1,21 @@
 # ECR Module Outputs
 
-output "repository_url" {
-  description = "ECR repository URL"
-  value       = aws_ecr_repository.main.repository_url
+output "repository_urls" {
+  description = "Map of service names to ECR repository URLs"
+  value       = { for k, v in aws_ecr_repository.service : k => v.repository_url }
 }
 
-output "repository_arn" {
-  description = "ECR repository ARN"
-  value       = aws_ecr_repository.main.arn
+output "repository_arns" {
+  description = "Map of service names to ECR repository ARNs"
+  value       = { for k, v in aws_ecr_repository.service : k => v.arn }
 }
 
-output "repository_name" {
-  description = "ECR repository name"
-  value       = aws_ecr_repository.main.name
+output "repository_names" {
+  description = "Map of service names to ECR repository names"
+  value       = { for k, v in aws_ecr_repository.service : k => v.name }
 }
 
 output "registry_id" {
-  description = "ECR registry ID"
-  value       = aws_ecr_repository.main.registry_id
+  description = "ECR registry ID (same for all repositories)"
+  value       = values(aws_ecr_repository.service)[0].registry_id
 }

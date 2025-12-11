@@ -13,14 +13,9 @@ module "network" {
 module "ecr" {
   source = "./modules/ecr"
 
-  project_name         = var.project_name
-  environment          = var.environment
-  image_tag_mutability = var.ecr_image_tag_mutability
-  scan_on_push         = var.ecr_scan_on_push
-  encryption_type      = var.ecr_encryption_type
-  kms_key_arn          = var.ecr_kms_key_arn
-  max_image_count      = var.ecr_max_image_count
-  untagged_image_days  = var.ecr_untagged_image_days
+  project_name = var.project_name
+  environment  = var.environment
+  services     = var.ecs_services
 }
 
 module "iam" {
@@ -28,7 +23,7 @@ module "iam" {
 
   project_name        = var.project_name
   environment         = var.environment
-  ecr_repository_arns = [module.ecr.repository_arn]
+  ecr_repository_arns = values(module.ecr.repository_arns)
 }
 
 module "ecs" {
@@ -42,7 +37,7 @@ module "ecs" {
   ecs_security_group_id     = module.network.ecs_security_group_id
   task_execution_role_arn   = module.iam.task_execution_role_arn
   task_role_arn             = module.iam.task_role_arn
-  ecr_repository_url        = module.ecr.repository_url
+  ecr_repository_urls       = module.ecr.repository_urls
   aws_region                = data.aws_region.current.name
   services                  = var.ecs_services
 }

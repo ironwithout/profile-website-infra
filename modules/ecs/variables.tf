@@ -58,9 +58,9 @@ variable "task_role_arn" {
 }
 
 # ECR Configuration
-variable "ecr_repository_url" {
-  description = "ECR repository URL for container images"
-  type        = string
+variable "ecr_repository_urls" {
+  description = "Map of service names to ECR repository URLs"
+  type        = map(string)
 }
 
 # AWS Region
