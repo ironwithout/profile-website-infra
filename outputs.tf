@@ -37,3 +37,25 @@ output "iam_task_role_arn" {
   description = "ARN of the ECS task role"
   value       = module.iam.task_role_arn
 }
+
+# ECS outputs
+output "ecs_cluster_name" {
+  description = "Name of the ECS cluster"
+  value       = module.ecs.cluster_name
+}
+
+output "ecs_service_names" {
+  description = "Map of service names"
+  value       = module.ecs.service_names
+}
+
+# ALB outputs (conditional)
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer (use this to access services)"
+  value       = var.enable_alb ? module.alb[0].alb_dns_name : null
+}
+
+output "alb_zone_id" {
+  description = "Zone ID of the ALB for Route53"
+  value       = var.enable_alb ? module.alb[0].alb_zone_id : null
+}

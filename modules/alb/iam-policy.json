@@ -1,0 +1,76 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ELBManagement",
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:DeleteLoadBalancer",
+        "elasticloadbalancing:DescribeLoadBalancers",
+        "elasticloadbalancing:DescribeLoadBalancerAttributes",
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
+        "elasticloadbalancing:SetSecurityGroups",
+        "elasticloadbalancing:SetSubnets",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags",
+        "elasticloadbalancing:DescribeTags"
+      ],
+      "Resource": "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+    },
+    {
+      "Sid": "TargetGroupManagement",
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:CreateTargetGroup",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "elasticloadbalancing:DescribeTargetGroups",
+        "elasticloadbalancing:DescribeTargetGroupAttributes",
+        "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags"
+      ],
+      "Resource": "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+    },
+    {
+      "Sid": "ListenerManagement",
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:DeleteListener",
+        "elasticloadbalancing:DescribeListeners",
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ListenerRuleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:DescribeRules",
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:SetRulePriorities",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EC2NetworkResources",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeNetworkInterfaces"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
