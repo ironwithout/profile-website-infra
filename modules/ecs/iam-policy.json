@@ -36,7 +36,10 @@
         "ecs:TagResource",
         "ecs:UntagResource"
       ],
-      "Resource": "arn:aws:ecs:*:*:service/*/*"
+      "Resource": [
+        "arn:aws:ecs:*:*:service/*/*",
+        "arn:aws:ecs:*:*:task-definition/*"
+      ]
     },
     {
       "Sid": "CloudWatchLogsManagement",
@@ -44,13 +47,19 @@
       "Action": [
         "logs:CreateLogGroup",
         "logs:DeleteLogGroup",
-        "logs:DescribeLogGroups",
         "logs:ListTagsLogGroup",
+        "logs:ListTagsForResource",
         "logs:PutRetentionPolicy",
         "logs:TagLogGroup",
         "logs:UntagLogGroup"
       ],
       "Resource": "arn:aws:logs:*:*:log-group:/ecs/*"
+    },
+    {
+      "Sid": "CloudWatchLogsDescribe",
+      "Effect": "Allow",
+      "Action": "logs:DescribeLogGroups",
+      "Resource": "*"
     },
     {
       "Sid": "IAMPassRole",
