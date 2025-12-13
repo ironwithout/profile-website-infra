@@ -77,8 +77,8 @@ data "aws_iam_policy_document" "task_execution_logs" {
       "logs:PutLogEvents"
     ]
     resources = [
-      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}-${var.environment}",
-      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}-${var.environment}:*"
+      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}-${var.environment}/*",
+      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}-${var.environment}/*:*"
     ]
   }
 }

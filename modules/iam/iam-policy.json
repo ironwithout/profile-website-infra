@@ -22,7 +22,9 @@
       "Effect": "Allow",
       "Action": [
         "iam:CreatePolicy",
+        "iam:CreatePolicyVersion",
         "iam:DeletePolicy",
+        "iam:DeletePolicyVersion",
         "iam:GetPolicy",
         "iam:GetPolicyVersion",
         "iam:ListPolicyVersions",
