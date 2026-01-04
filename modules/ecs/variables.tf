@@ -69,6 +69,7 @@ variable "services" {
   type = map(object({
     container_name      = string
     container_port      = number
+    container_image     = string
     container_image_tag = string
     container_environment_variables = list(object({
       name  = string
