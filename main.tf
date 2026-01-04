@@ -29,7 +29,6 @@ module "ecs" {
   ecs_security_group_id     = module.network.ecs_security_group_id
   task_execution_role_arn   = module.iam.task_execution_role_arn
   task_role_arn             = module.iam.task_role_arn
-  ecr_repository_urls       = var.ecr_repository_urls
   aws_region                = data.aws_region.current.name
   services                  = var.ecs_services
 }

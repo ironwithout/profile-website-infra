@@ -27,8 +27,9 @@ enable_container_insights = false
 ecs_services = {
   api = {
     container_name  = "api"
-    container_port  = 3000
+    container_image = "image_url"
     container_image_tag = "latest"
+    container_port  = 3000
     container_environment_variables = [
       { name = "NODE_ENV", value = "development" },
       { name = "LOG_LEVEL", value = "debug" }
