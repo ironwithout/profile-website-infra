@@ -16,35 +16,59 @@ ecr_repository_arns = [
 ]
 
 # ECS Services Configuration
-enable_container_insights = false
+enable_container_insights = "disabled"
+
+# ALB Configuration
+enable_alb              = false # Set to true to enable Application Load Balancer
+alb_deletion_protection = false
 
 # Define multiple services as needed (api, worker, etc.)
 ecs_services = {
   api = {
     container_name  = "api"
-    container_port  = 3000
     container_image = "image_url"
     container_image_tag = "latest"
+    container_port  = 3000
     container_environment_variables = [
       { name = "NODE_ENV", value = "development" },
       { name = "LOG_LEVEL", value = "debug" }
     ]
-    task_cpu                           = "256"
-    task_memory                        = "512"
-    desired_count                      = 1
-    launch_type                        = "FARGATE_SPOT"
-    assign_public_ip                   = true
-    use_private_subnets                = false
-    log_retention_days                 = 3
-    health_check_command               = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
-    health_check_interval              = 30
-    health_check_timeout               = 5
-    health_check_retries               = 3
-    health_check_start_period          = 60
+
+    # Task Configuration
+    task_cpu    = "256"
+    task_memory = "512"
+
+    # Service Configuration (when ALB disabled - direct access)
+    desired_count       = 1
+    launch_type         = "FARGATE_SPOT"
+    assign_public_ip    = true  # Set to false when ALB enabled
+    use_private_subnets = false # Set to true when ALB enabled
+
+    # Logging Configuration
+    log_retention_days = 3
+
+    # Container Health Check
+    health_check_command      = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+    health_check_interval     = 30
+    health_check_timeout      = 5
+    health_check_retries      = 3
+    health_check_start_period = 60
+
+    # Deployment Configuration
     deployment_maximum_percent         = 200
     deployment_minimum_healthy_percent = 100
     enable_deployment_circuit_breaker  = true
     enable_deployment_rollback         = true
+
+    # ALB Configuration (only used when enable_alb = true)
+    alb_health_check_path                = "/health"
+    alb_health_check_matcher             = "200-299"
+    alb_health_check_healthy_threshold   = 2
+    alb_health_check_unhealthy_threshold = 3
+    alb_deregistration_delay             = 30
+    alb_listener_rule_priority           = 100
+    alb_path_pattern                     = "/*"    # Route all traffic to this service
+    alb_host_header                      = null    # Or set to "api.example.com" for host-based routing
   }
   # Uncomment to add more services:
   # worker = {

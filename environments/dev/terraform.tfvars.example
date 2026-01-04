@@ -11,14 +11,9 @@ vpc_cidr           = "10.0.0.0/16"
 availability_zones = ["us-east-1a", "us-east-1b"]
 
 # ECR Repository Configuration
-ecr_repository_arns = {
-  app = "arn:aws:ecr:region:account-id:repository/repo-name"
-}
-
-# ECR Repository URLs for container images
-ecr_repository_urls = {
-  app = "account-id.dkr.ecr.region.amazonaws.com/repo-name"
-}
+ecr_repository_arns = [
+  "arn:aws:ecr:region:account-id:repository/repo-name"
+]
 
 # ECS Services Configuration
 enable_container_insights = "disabled"
