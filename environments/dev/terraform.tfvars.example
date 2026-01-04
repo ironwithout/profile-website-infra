@@ -10,13 +10,15 @@ environment  = "dev"
 vpc_cidr           = "10.0.0.0/16"
 availability_zones = ["us-east-1a", "us-east-1b"]
 
-# ECR
-ecr_image_tag_mutability = "MUTABLE"
-ecr_scan_on_push         = true
-ecr_encryption_type      = "AES256"       # AES256 or KMS
-ecr_kms_key_arn          = "null"         # Only for KMS
-ecr_max_image_count      = 10             # Number of tagged images to retain
-ecr_untagged_image_days  = 3              # Days to keep untagged images
+# ECR Repository Configuration
+ecr_repository_arns = {
+  app = "arn:aws:ecr:region:account-id:repository/repo-name"
+}
+
+# ECR Repository URLs for container images
+ecr_repository_urls = {
+  app = "account-id.dkr.ecr.region.amazonaws.com/repo-name"
+}
 
 # ECS Services Configuration
 enable_container_insights = false
@@ -25,8 +27,9 @@ enable_container_insights = false
 ecs_services = {
   api = {
     container_name  = "api"
-    container_port  = 3000
+    container_image = "image_url"
     container_image_tag = "latest"
+    container_port  = 3000
     container_environment_variables = [
       { name = "NODE_ENV", value = "development" },
       { name = "LOG_LEVEL", value = "debug" }

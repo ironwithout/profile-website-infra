@@ -1,6 +1,12 @@
 # AWS ECS Fargate Infrastructure
 
-Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orchestrates reusable modules; currently implements `network` module. Each environment has isolated S3 state via partial backend config.
+Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orchestrates reusable modules: `network`, `iam`, and `ecs`. Each environment has isolated S3 state via partial backend config.
+
+## Architecture Principles
+
+**ECR Repositories**: ECR repositories are **not** managed by this infrastructure. They should be created manually or in a separate foundational infrastructure repository. This infrastructure references existing ECR repositories via input variables.
+
+**Module Pattern**: Modules must be self-contained with own `terraform` block, `variables.tf`, `outputs.tf`, and `README.md`. Root `main.tf` only invokes modules, never defines resources.
 
 ## Naming & Tagging
 
