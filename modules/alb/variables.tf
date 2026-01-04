@@ -49,16 +49,16 @@ variable "enable_deletion_protection" {
 variable "services" {
   description = "Map of service configurations for ALB target groups"
   type = map(object({
-    container_port                  = number
-    health_check_healthy_threshold  = number
+    container_port                   = number
+    health_check_healthy_threshold   = number
     health_check_unhealthy_threshold = number
-    health_check_timeout            = number
-    health_check_interval           = number
-    health_check_path               = string
-    health_check_matcher            = string
-    deregistration_delay            = number
-    listener_rule_priority          = number
-    path_pattern                    = string
-    host_header                     = string
+    health_check_timeout             = number
+    health_check_interval            = number
+    health_check_path                = string
+    health_check_matcher             = string
+    deregistration_delay             = number
+    listener_rule_priority           = number
+    path_pattern                     = string
+    host_header                      = string
   }))
 }
