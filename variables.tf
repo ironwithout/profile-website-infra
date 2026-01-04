@@ -44,6 +44,17 @@ variable "availability_zones" {
   type        = list(string)
 }
 
+# ECR Configuration
+variable "ecr_repository_arns" {
+  description = "Map of service names to ECR repository ARNs for IAM permissions"
+  type        = map(string)
+}
+
+variable "ecr_repository_urls" {
+  description = "Map of service names to ECR repository URLs for container images"
+  type        = map(string)
+}
+
 # Services Configuration (includes ECR and ECS settings per service)
 # ECS configuration
 variable "enable_container_insights" {
@@ -57,16 +68,8 @@ variable "enable_container_insights" {
 }
 
 variable "ecs_services" {
-  description = "Map of service configurations including ECR and ECS settings"
+  description = "Map of ECS service configurations"
   type = map(object({
-    # ECR Configuration
-    ecr_image_tag_mutability = string
-    ecr_scan_on_push         = bool
-    ecr_encryption_type      = string
-    ecr_kms_key_arn          = string
-    ecr_max_image_count      = number
-    ecr_untagged_image_days  = number
-
     # ECS Configuration
     container_name      = string
     container_port      = number

@@ -16,17 +16,6 @@ output "private_subnet_ids" {
   value       = module.network.private_subnet_ids
 }
 
-# ECR outputs
-output "ecr_repository_urls" {
-  description = "ECR repository URLs for docker push/pull"
-  value       = module.ecr.repository_urls
-}
-
-output "ecr_repository_names" {
-  description = "ECR repository names"
-  value       = module.ecr.repository_names
-}
-
 # IAM outputs
 output "iam_task_execution_role_arn" {
   description = "ARN of the ECS task execution role"
