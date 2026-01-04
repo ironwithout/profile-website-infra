@@ -10,20 +10,12 @@ module "network" {
   availability_zones = var.availability_zones
 }
 
-module "ecr" {
-  source = "./modules/ecr"
-
-  project_name = var.project_name
-  environment  = var.environment
-  services     = var.ecs_services
-}
-
 module "iam" {
   source = "./modules/iam"
 
   project_name        = var.project_name
   environment         = var.environment
-  ecr_repository_arns = values(module.ecr.repository_arns)
+  ecr_repository_arns = var.ecr_repository_arns
 }
 
 module "alb" {
@@ -65,7 +57,6 @@ module "ecs" {
   ecs_security_group_id     = module.network.ecs_security_group_id
   task_execution_role_arn   = module.iam.task_execution_role_arn
   task_role_arn             = module.iam.task_role_arn
-  ecr_repository_urls       = module.ecr.repository_urls
   aws_region                = data.aws_region.current.name
   services                  = var.ecs_services
   alb_target_group_arns     = var.enable_alb ? module.alb[0].target_group_arns : {}

@@ -57,12 +57,6 @@ variable "task_role_arn" {
   type        = string
 }
 
-# ECR Configuration
-variable "ecr_repository_urls" {
-  description = "Map of service names to ECR repository URLs"
-  type        = map(string)
-}
-
 # AWS Region
 variable "aws_region" {
   description = "AWS region for CloudWatch logs configuration"
@@ -75,6 +69,7 @@ variable "services" {
   type = map(object({
     container_name      = string
     container_port      = number
+    container_image     = string
     container_image_tag = string
     container_environment_variables = list(object({
       name  = string

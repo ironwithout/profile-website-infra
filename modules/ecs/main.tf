@@ -37,18 +37,6 @@ resource "aws_cloudwatch_log_group" "service" {
   }
 }
 
-locals {
-  service_images = {
-    for name, config in var.services : name => (
-      # If tag contains :// or starts with public domain, use as-is (full URL)
-      can(regex("^(public\\.ecr\\.aws|[^:]+://)", config.container_image_tag))
-      ? config.container_image_tag
-      # Otherwise, prepend ECR repository URL
-      : "${var.ecr_repository_urls[name]}:${config.container_image_tag}"
-    )
-  }
-}
-
 # ECS Task Definition for each service
 resource "aws_ecs_task_definition" "service" {
   for_each = var.services
@@ -64,7 +52,7 @@ resource "aws_ecs_task_definition" "service" {
   container_definitions = jsonencode([
     {
       name      = each.value.container_name
-      image     = local.service_images[each.key]
+      image     = each.value.container_image
       essential = true
 
       portMappings = [
