@@ -113,15 +113,15 @@ resource "aws_ecs_service" "service" {
     rollback = each.value.enable_deployment_rollback
   }
 
-  # Note: Load balancer configuration will be added when ALB module is integrated
-  # dynamic "load_balancer" {
-  #   for_each = var.target_group_arn != null ? [1] : []
-  #   content {
-  #     target_group_arn = var.target_group_arn
-  #     container_name   = each.value.container_name
-  #     container_port   = each.value.container_port
-  #   }
-  # }
+  # Register with ALB target group if ALB is enabled
+  dynamic "load_balancer" {
+    for_each = lookup(var.alb_target_group_arns, each.key, null) != null ? [1] : []
+    content {
+      target_group_arn = var.alb_target_group_arns[each.key]
+      container_name   = each.value.container_name
+      container_port   = each.value.container_port
+    }
+  }
 
   tags = {
     Name    = "${var.project_name}-${var.environment}-${each.key}-service"

@@ -63,7 +63,7 @@ variable "enable_container_insights" {
 }
 
 variable "ecs_services" {
-  description = "Map of ECS service configurations"
+  description = "Map of service configurations including ECR, ECS, and ALB settings"
   type = map(object({
     # ECS Configuration
     container_name      = string
@@ -100,7 +100,30 @@ variable "ecs_services" {
     deployment_minimum_healthy_percent = number
     enable_deployment_circuit_breaker  = bool
     enable_deployment_rollback         = bool
+
+    # ALB Configuration
+    alb_health_check_path                = string
+    alb_health_check_matcher             = string
+    alb_health_check_healthy_threshold   = number
+    alb_health_check_unhealthy_threshold = number
+    alb_deregistration_delay             = number
+    alb_listener_rule_priority           = number
+    alb_path_pattern                     = string
+    alb_host_header                      = string
   }))
 
   default = {}
+}
+
+# ALB Configuration
+variable "enable_alb" {
+  description = "Enable Application Load Balancer"
+  type        = bool
+  default     = false
+}
+
+variable "alb_deletion_protection" {
+  description = "Enable deletion protection for ALB"
+  type        = bool
+  default     = false
 }

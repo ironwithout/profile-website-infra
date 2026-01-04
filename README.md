@@ -10,7 +10,7 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
                  CloudWatch Logs
 ```
 
-**Module Architecture**: Root layer orchestrates reusable modules. Currently implements `network` module (VPC, subnets, security groups). Future modules: IAM, ECR, ECS, ALB, Route53.
+**Module Architecture**: Root layer orchestrates reusable modules.
 
 ## Prerequisites
 
@@ -114,10 +114,9 @@ terraform init -reconfigure -backend-config=environments/prod/backend.hcl
 
 1. `network` - VPC, subnets, security groups (✅ implemented)
 2. `iam` - Task execution and task roles
-3. `ecr` - Container registry
-4. `ecs` - Fargate cluster and service
-5. `alb` - Application Load Balancer
-6. `route53` - DNS configuration
+3. `ecs` - Fargate cluster and service
+4. `alb` - Application Load Balancer
+5. `route53` - DNS configuration
 
 Each module contains its own `iam-policy.json` with minimum required IAM permissions.
 

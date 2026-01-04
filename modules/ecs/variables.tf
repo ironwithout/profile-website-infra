@@ -93,3 +93,10 @@ variable "services" {
     enable_deployment_rollback         = bool
   }))
 }
+
+# ALB Configuration (optional)
+variable "alb_target_group_arns" {
+  description = "Map of service names to ALB target group ARNs (empty if ALB not enabled)"
+  type        = map(string)
+  default     = {}
+}

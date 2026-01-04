@@ -10,12 +10,16 @@
         "iam:GetRole",
         "iam:ListRolePolicies",
         "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole",
         "iam:TagRole",
         "iam:UntagRole",
         "iam:UpdateRole",
         "iam:UpdateAssumeRolePolicy"
       ],
-      "Resource": "arn:aws:iam::*:role/*"
+      "Resource": [
+        "arn:aws:iam::*:role/*-ecs-task-execution",
+        "arn:aws:iam::*:role/*-ecs-task"
+      ]
     },
     {
       "Sid": "IAMPolicyManagement",
@@ -40,7 +44,10 @@
         "iam:AttachRolePolicy",
         "iam:DetachRolePolicy"
       ],
-      "Resource": "arn:aws:iam::*:role/*"
+      "Resource": [
+        "arn:aws:iam::*:role/*-ecs-task-execution",
+        "arn:aws:iam::*:role/*-ecs-task"
+      ]
     }
   ]
 }
