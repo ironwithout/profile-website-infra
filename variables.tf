@@ -16,7 +16,7 @@ variable "aws_account_id" {
 variable "project_name" {
   description = "Project name used for resource naming (lowercase, hyphens)"
   type        = string
-  default     = "profile"
+  default     = "profile-website"
 
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.project_name))
