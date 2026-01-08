@@ -44,7 +44,7 @@ The S3 backend is configured in the root `backend.tf` with environment-specific 
 # environments/dev/backend.hcl
 bucket = "terraform-state-<ACCOUNT_ID>-<REGION>"
 region = "us-east-1"
-key    = "aws-iac/ecs-webapp/dev/terraform.tfstate"
+key    = "dev/terraform.tfstate"
 ```
 
 ## Prerequisites

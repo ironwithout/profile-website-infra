@@ -226,9 +226,9 @@ terraform {
 }
 
 # environments/dev/backend.hcl
-bucket = "terraform-state-<ACCOUNT_ID>-<REGION>"
+bucket = "terraform-state-<ACCOUNT_ID>"
 region = "us-east-1"
-key    = "aws-iac/ecs-webapp/dev/terraform.tfstate"
+key    = "dev/terraform.tfstate"
 ```
 
 **Switch environments**:

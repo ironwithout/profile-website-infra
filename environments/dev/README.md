@@ -12,9 +12,9 @@ Environment-specific configuration for the development environment.
 
 2. Edit `backend.hcl` with your AWS account ID:
    ```hcl
-   bucket = "terraform-state-<YOUR_ACCOUNT_ID>-us-east-1"
+   bucket = "terraform-state-<YOUR_ACCOUNT_ID>"
    region = "us-east-1"
-   key    = "aws-iac/ecs-webapp/dev/terraform.tfstate"
+   key    = "dev/terraform.tfstate"
    ```
 
 3. Edit `terraform.tfvars` with specific values (project name, region, etc.)
