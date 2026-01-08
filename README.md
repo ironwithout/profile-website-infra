@@ -76,7 +76,7 @@ Create an S3 bucket for Terraform state:
 # Set your values
 export AWS_REGION="us-east-1"
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export BUCKET_NAME="terraform-state-${AWS_ACCOUNT_ID}-${AWS_REGION}"
+export BUCKET_NAME="terraform-state-profile-website-${AWS_ACCOUNT_ID}-${AWS_REGION}"
 
 # Create bucket
 aws s3api create-bucket --bucket "${BUCKET_NAME}" --region "${AWS_REGION}"
@@ -96,12 +96,6 @@ aws s3api put-bucket-encryption \
       }
     }]
   }'
-
-# Block public access
-aws s3api put-public-access-block \
-  --bucket "${BUCKET_NAME}" \
-  --public-access-block-configuration \
-    "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 ```
 
 ### 2. Configure IAM Permissions
