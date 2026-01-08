@@ -173,7 +173,7 @@ aws iam create-policy-version \
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `project_name` | string | yes | - | Project name (kebab-case) |
-| `environment` | string | yes | - | Environment (dev/prod/staging) |
+| `environment` | string | yes | - | Environment (dev/prod) |
 | `vpc_id` | string | yes | - | VPC ID |
 | `public_subnet_ids` | list(string) | yes | - | Public subnet IDs (min 2) |
 | `enable_deletion_protection` | bool | no | false | Enable deletion protection |

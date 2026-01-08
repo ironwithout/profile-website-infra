@@ -12,7 +12,7 @@ Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orch
 
 **Naming**: `${project_name}-${environment}-<resource-type>` (e.g., `myapp-dev-vpc`)
 - `project_name`: kebab-case only (validated)
-- `environment`: `dev|prod|staging` (validated)
+- `environment`: `dev|prod` (validated)
 
 **Tags**: Auto-applied via `versions.tf` `default_tags` - never add `Project`, `Environment`, or `ManagedBy` tags manually.
 

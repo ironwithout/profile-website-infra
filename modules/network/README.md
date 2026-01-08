@@ -33,7 +33,7 @@ module "network" {
 | Name | Description | Type |
 |------|-------------|------|
 | project_name | Project name for resource naming | string |
-| environment | Environment (dev/prod/staging) | string |
+| environment | Environment (dev/prod) | string |
 | vpc_cidr | CIDR block for VPC | string |
 | availability_zones | List of AZs for subnet distribution | list(string) |
 
@@ -52,4 +52,4 @@ module "network" {
 Uses source-based security group referencing instead of CIDR blocks for internal traffic (ALB → ECS), following AWS best practices.
 
 ## Cost Optimization
-Public subnets configured with auto-assign public IP to avoid NAT Gateway costs for dev/staging environments.
+Public subnets configured with auto-assign public IP to avoid NAT Gateway costs for dev environments.

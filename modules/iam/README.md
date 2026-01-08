@@ -42,7 +42,7 @@ Uses single consolidated policy approach:
 | Name | Description | Type |
 |------|-------------|------|
 | `project_name` | Project name (kebab-case) | `string` |
-| `environment` | Environment (dev/prod/staging) | `string` |
+| `environment` | Environment (dev/prod) | `string` |
 | `ecr_repository_arns` | ECR repository ARNs for image pulls | `list(string)` |
 
 ## Module Outputs

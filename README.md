@@ -38,7 +38,7 @@ Internet → Route53 → ALB (HTTPS) → ECS Fargate → ECR
 │       ├── iam-policy.json # IAM policy for this module
 │       └── README.md
 └── environments/
-    └── <env>/              # Environment-specific configs (dev, prod, staging)
+    └── <env>/              # Environment-specific configs (dev, prod)
         ├── backend.hcl
         ├── terraform.tfvars.example
         └── README.md
@@ -159,7 +159,7 @@ tflint --recursive
 
 ### Cost Optimization
 
-- Use Fargate Spot for dev/staging
+- Use Fargate Spot for dev
 - Deploy to public subnets (no NAT Gateway costs)
 - Consolidate apps behind single ALB
 - Set appropriate log retention periods

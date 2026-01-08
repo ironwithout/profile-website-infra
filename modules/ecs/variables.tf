@@ -11,7 +11,7 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Environment name (dev, prod, staging)"
+  description = "Environment name (dev, prod)"
   type        = string
 
   validation {
