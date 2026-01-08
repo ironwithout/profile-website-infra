@@ -16,6 +16,7 @@ variable "aws_account_id" {
 variable "project_name" {
   description = "Project name used for resource naming (lowercase, hyphens)"
   type        = string
+  default     = "profile"
 
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.project_name))
@@ -37,11 +38,13 @@ variable "environment" {
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
+  default     = "10.0.0.0/16"
 }
 
 variable "availability_zones" {
   description = "List of availability zones"
   type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
 }
 
 # ECR Configuration
@@ -50,11 +53,11 @@ variable "ecr_repository_arns" {
   type        = list(string)
 }
 
-# Services Configuration (includes ECR and ECS settings per service)
-# ECS configuration
+# ECS Cluster Configuration
 variable "enable_container_insights" {
-  description = "Enable container insights"
+  description = "Enable container insights for ECS cluster"
   type        = string
+  default     = "disabled"
 
   validation {
     condition     = contains(["enabled", "disabled"], var.enable_container_insights)
@@ -62,54 +65,27 @@ variable "enable_container_insights" {
   }
 }
 
+# ECS Services - Simplified with sensible defaults
 variable "ecs_services" {
-  description = "Map of service configurations including ECR, ECS, and ALB settings"
+  description = "Map of ECS service configurations (minimal required fields, rest use sensible defaults)"
   type = map(object({
-    # ECS Configuration
-    container_name      = string
-    container_port      = number
-    container_image     = string
-    container_image_tag = string
-    container_environment_variables = list(object({
-      name  = string
-      value = string
-    }))
+    # Required fields
+    container_name  = string
+    container_image = string
+    container_port  = number
 
-    # Task Configuration
-    task_cpu    = string
-    task_memory = string
-
-    # Service Configuration
-    desired_count       = number
-    launch_type         = string
-    assign_public_ip    = bool
-    use_private_subnets = bool
-
-    # Logging
-    log_retention_days = number
-
-    # Health Check
-    health_check_command      = list(string)
-    health_check_interval     = number
-    health_check_timeout      = number
-    health_check_retries      = number
-    health_check_start_period = number
-
-    # Deployment
-    deployment_maximum_percent         = number
-    deployment_minimum_healthy_percent = number
-    enable_deployment_circuit_breaker  = bool
-    enable_deployment_rollback         = bool
-
-    # ALB Configuration
-    alb_health_check_path                = string
-    alb_health_check_matcher             = string
-    alb_health_check_healthy_threshold   = number
-    alb_health_check_unhealthy_threshold = number
-    alb_deregistration_delay             = number
-    alb_listener_rule_priority           = number
-    alb_path_pattern                     = string
-    alb_host_header                      = string
+    # Optional with defaults
+    container_image_tag       = optional(string, "latest")
+    task_cpu                  = optional(string, "256")
+    task_memory               = optional(string, "512")
+    desired_count             = optional(number, 1)
+    launch_type               = optional(string, "FARGATE")
+    environment_variables     = optional(map(string), {})
+    use_private_subnets       = optional(bool, null) # null = auto: private if ALB enabled, public otherwise
+    assign_public_ip          = optional(bool, null) # null = auto: true for public subnets, false for private
+    log_retention_days        = optional(number, 7)
+    health_check_command      = optional(list(string), null)
+    health_check_grace_period = optional(number, 60)
   }))
 
   default = {}
@@ -126,4 +102,27 @@ variable "alb_deletion_protection" {
   description = "Enable deletion protection for ALB"
   type        = bool
   default     = false
+}
+
+# ALB routing configuration (only used when enable_alb = true)
+variable "alb_routes" {
+  description = "ALB routing configuration per service (only required when enable_alb = true)"
+  type = map(object({
+    path_pattern          = string
+    priority              = number
+    host_header           = optional(string, null)
+    health_check_path     = optional(string, "/health")
+    health_check_matcher  = optional(string, "200-299")
+    health_check_interval = optional(number, 30)
+    health_check_timeout  = optional(number, 5)
+    healthy_threshold     = optional(number, 2)
+    unhealthy_threshold   = optional(number, 3)
+    deregistration_delay  = optional(number, 30)
+  }))
+  default = {}
+
+  validation {
+    condition     = !var.enable_alb || length(var.alb_routes) > 0
+    error_message = "When ALB is enabled, alb_routes must be configured for at least one service."
+  }
 }

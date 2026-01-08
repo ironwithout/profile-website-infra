@@ -2,78 +2,75 @@
 
 aws_account_id = "123456789012"
 aws_region     = "us-east-1"
-
-project_name = "myapp"
 environment  = "prod"
-
-# Network
-vpc_cidr           = "10.0.0.0/16"
-availability_zones = ["us-east-1a", "us-east-1b"]
 
 # ECR Repository Configuration
 ecr_repository_arns = [
-  "arn:aws:ecr:region:account-id:repository/repo-name"
+  "arn:aws:ecr:us-east-1:123456789012:repository/profile-api",
+  "arn:aws:ecr:us-east-1:123456789012:repository/profile-worker"
 ]
 
-# ECS Services Configuration
-enable_container_insights = "disabled"
+# ECS Cluster
+enable_container_insights = "enabled"
 
-# ALB Configuration
-enable_alb              = false # Set to true to enable Application Load Balancer
-alb_deletion_protection = false
-
-# Define multiple services as needed (api, worker, etc.)
+# ECS Services - Production Configuration
 ecs_services = {
   api = {
+    # Required
     container_name  = "api"
-    container_image = "image_url"
-    container_image_tag = "latest"
+    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-api"
     container_port  = 3000
-    container_environment_variables = [
-      { name = "NODE_ENV", value = "development" },
-      { name = "LOG_LEVEL", value = "debug" }
-    ]
-
-    # Task Configuration
-    task_cpu    = "256"
-    task_memory = "512"
-
-    # Service Configuration (when ALB disabled - direct access)
-    desired_count       = 1
-    launch_type         = "FARGATE_SPOT"
-    assign_public_ip    = true  # Set to false when ALB enabled
-    use_private_subnets = false # Set to true when ALB enabled
-
-    # Logging Configuration
-    log_retention_days = 3
-
-    # Container Health Check
+    
+    # Production overrides
+    container_image_tag = "v1.0.0"
+    task_cpu            = "1024"
+    task_memory         = "2048"
+    desired_count       = 3
+    launch_type         = "FARGATE" # Standard Fargate for production
+    log_retention_days  = 30
+    
+    environment_variables = {
+      NODE_ENV  = "production"
+      LOG_LEVEL = "info"
+    }
+    
     health_check_command      = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
-    health_check_interval     = 30
-    health_check_timeout      = 5
-    health_check_retries      = 3
-    health_check_start_period = 60
-
-    # Deployment Configuration
-    deployment_maximum_percent         = 200
-    deployment_minimum_healthy_percent = 100
-    enable_deployment_circuit_breaker  = true
-    enable_deployment_rollback         = true
-
-    # ALB Configuration (only used when enable_alb = true)
-    alb_health_check_path                = "/health"
-    alb_health_check_matcher             = "200-299"
-    alb_health_check_healthy_threshold   = 2
-    alb_health_check_unhealthy_threshold = 3
-    alb_deregistration_delay             = 30
-    alb_listener_rule_priority           = 100
-    alb_path_pattern                     = "/*"    # Route all traffic to this service
-    alb_host_header                      = null    # Or set to "api.example.com" for host-based routing
+    health_check_grace_period = 120
   }
-  # Uncomment to add more services:
-  # worker = {
-  #   container_name  = "worker"
-  #   container_port  = 8080
-  #   ...
-  # }
+  
+  worker = {
+    container_name  = "worker"
+    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-worker"
+    container_port  = 8080
+    
+    container_image_tag = "v1.0.0"
+    task_cpu            = "512"
+    task_memory         = "1024"
+    desired_count       = 2
+    log_retention_days  = 30
+    
+    environment_variables = {
+      NODE_ENV = "production"
+    }
+  }
+}
+
+# ALB Configuration (enabled for production)
+enable_alb              = true
+alb_deletion_protection = true
+
+# ALB Routing - Separate from service definitions
+alb_routes = {
+  api = {
+    path_pattern = "/api/*"
+    priority     = 100
+    # Optional overrides
+    # host_header = "api.example.com"
+    # health_check_path = "/health"
+  }
+  
+  worker = {
+    path_pattern = "/worker/*"
+    priority     = 200
+  }
 }

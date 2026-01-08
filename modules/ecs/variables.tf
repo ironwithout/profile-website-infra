@@ -63,34 +63,24 @@ variable "aws_region" {
   type        = string
 }
 
-# Services Configuration
+# Services Configuration - Simplified
 variable "services" {
-  description = "Map of ECS service configurations"
+  description = "Map of ECS service configurations with sensible defaults"
   type = map(object({
-    container_name      = string
-    container_port      = number
-    container_image     = string
-    container_image_tag = string
-    container_environment_variables = list(object({
-      name  = string
-      value = string
-    }))
-    task_cpu                           = string
-    task_memory                        = string
-    desired_count                      = number
-    launch_type                        = string
-    assign_public_ip                   = bool
-    use_private_subnets                = bool
-    log_retention_days                 = number
-    health_check_command               = list(string)
-    health_check_interval              = number
-    health_check_timeout               = number
-    health_check_retries               = number
-    health_check_start_period          = number
-    deployment_maximum_percent         = number
-    deployment_minimum_healthy_percent = number
-    enable_deployment_circuit_breaker  = bool
-    enable_deployment_rollback         = bool
+    container_name            = string
+    container_port            = number
+    container_image           = string
+    container_image_tag       = string
+    task_cpu                  = string
+    task_memory               = string
+    desired_count             = number
+    launch_type               = string
+    assign_public_ip          = bool
+    use_private_subnets       = bool
+    log_retention_days        = number
+    environment_variables     = map(string)
+    health_check_command      = optional(list(string))
+    health_check_grace_period = number
   }))
 }
 

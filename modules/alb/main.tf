@@ -47,8 +47,8 @@ resource "aws_lb_target_group" "service" {
   # Health check configuration
   health_check {
     enabled             = true
-    healthy_threshold   = each.value.health_check_healthy_threshold
-    unhealthy_threshold = each.value.health_check_unhealthy_threshold
+    healthy_threshold   = each.value.healthy_threshold
+    unhealthy_threshold = each.value.unhealthy_threshold
     timeout             = each.value.health_check_timeout
     interval            = each.value.health_check_interval
     path                = each.value.health_check_path
