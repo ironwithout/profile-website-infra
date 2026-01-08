@@ -155,18 +155,7 @@ resource "aws_lb_listener" "https" {
 
 ## IAM Permissions
 
-The terraform-deployer user needs permissions to manage ELB resources. Apply the policy:
-
-```bash
-POLICY_ARN=$(aws iam list-policies --scope Local \
-  --query 'Policies[?PolicyName==`terraform-deployer-alb`].Arn' \
-  --output text)
-
-aws iam create-policy-version \
-  --policy-arn $POLICY_ARN \
-  --policy-document file://modules/alb/iam-policy.json \
-  --set-as-default
-```
+Your IAM user or role needs permissions to manage ELB resources. The required permissions are defined in `iam-policy.json` and should be combined with other module policies using `tooling/create_iam_policies.sh`, then applied to your IAM principal.
 
 ## Variables
 

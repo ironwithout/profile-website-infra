@@ -69,5 +69,6 @@ Follow **incremental least-privilege approach** when adding modules. Update poli
 
 1. Create `modules/<name>/` with required files
 2. Update root `main.tf` to invoke module
-3. Add IAM permissions to `iam-policies/terraform-deployer-<scope>.json`
-4. Update IAM policy version in AWS (see `iam-policies/README.md`)
+3. Add IAM permissions to module's `iam-policy.json`
+4. Combine with other module policies using `tooling/create_iam_policies.sh`
+5. Update IAM policy version for your IAM principal in AWS
