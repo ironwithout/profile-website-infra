@@ -29,12 +29,6 @@ Environment-specific configuration for the development environment.
 
 Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
 
-## Configuration
-
-- **Cost Optimization**: Uses Fargate Spot, shorter log retention, minimal replicas
-- **Network**: Uses public subnets with auto-assign public IP (no NAT Gateway)
-- **Secrets**: Stored in SSM Parameter Store, referenced in task definitions
-
 ## Important
 
 ⚠️ **Do not commit these files** (both are gitignored):

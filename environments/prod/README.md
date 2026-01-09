@@ -4,14 +4,22 @@ Environment-specific configuration for the production environment.
 
 ## Setup
 
-1. Copy the example file:
+1. Copy the example files:
    ```bash
    cp terraform.tfvars.example terraform.tfvars
+   cp backend.hcl.example backend.hcl
    ```
 
-2. Edit `terraform.tfvars` with specific values (project name, region, etc.)
+2. Edit `backend.hcl` with your AWS account ID:
+   ```hcl
+   bucket = "terraform-state-<YOUR_ACCOUNT_ID>"
+   region = "us-east-1"
+   key    = "prod/terraform.tfstate"
+   ```
 
-3. Initialize with prod backend and apply:
+3. Edit `terraform.tfvars` with specific values (project name, region, etc.)
+
+4. Initialize with prod backend and apply:
    ```bash
    cd ../..  # Return to root
    terraform init -backend-config=environments/prod/backend.hcl
@@ -20,12 +28,6 @@ Environment-specific configuration for the production environment.
    ```
 
 Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
-
-## Configuration
-
-- **High Availability**: Uses 3 AZs, multiple task replicas, standard Fargate
-- **Logging**: 90-day CloudWatch log retention
-- **Security**: TLS 1.3, strict security policies, regular backups
 
 ## Important
 
