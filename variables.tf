@@ -71,18 +71,6 @@ variable "domain_name" {
   type        = string
 }
 
-variable "waf_rate_limit" {
-  description = "Maximum requests per 5 minutes from single IP (100-20000000)"
-  type        = number
-  default     = 2000
-}
-
-variable "waf_ip_allowlist" {
-  description = "List of IP addresses (CIDR) to always allow through WAF"
-  type        = list(string)
-  default     = []
-}
-
 # ALB routing configuration (only used when enable_alb = true)
 variable "alb_routes" {
   description = "ALB routing configuration per service (only required when enable_alb = true)"

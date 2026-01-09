@@ -100,57 +100,27 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   ##################################################
-  # Rule 4: Rate Limiting (optional)
+  # Rule 4: Rate Limiting
   ##################################################
-  dynamic "rule" {
-    for_each = var.rate_limit_enabled ? [1] : []
-    content {
-      name     = "RateLimitRule"
-      priority = 4
+  rule {
+    name     = "RateLimitRule"
+    priority = 4
 
-      action {
-        block {}
-      }
+    action {
+      block {}
+    }
 
-      statement {
-        rate_based_statement {
-          limit              = var.rate_limit_requests
-          aggregate_key_type = "IP"
-        }
-      }
-
-      visibility_config {
-        cloudwatch_metrics_enabled = true
-        metric_name                = "${var.project_name}-rate-limit"
-        sampled_requests_enabled   = true
+    statement {
+      rate_based_statement {
+        limit              = 2000
+        aggregate_key_type = "IP"
       }
     }
-  }
 
-  ##################################################
-  # Rule 5: IP Allowlist (optional)
-  ##################################################
-  dynamic "rule" {
-    for_each = length(var.ip_allowlist) > 0 ? [1] : []
-    content {
-      name     = "IPAllowlistRule"
-      priority = 10
-
-      action {
-        allow {}
-      }
-
-      statement {
-        ip_set_reference_statement {
-          arn = aws_wafv2_ip_set.allowlist[0].arn
-        }
-      }
-
-      visibility_config {
-        cloudwatch_metrics_enabled = true
-        metric_name                = "${var.project_name}-ip-allowlist"
-        sampled_requests_enabled   = true
-      }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.project_name}-rate-limit"
+      sampled_requests_enabled   = true
     }
   }
 
@@ -162,24 +132,6 @@ resource "aws_wafv2_web_acl" "main" {
 
   tags = {
     Name = "${var.project_name}-waf"
-  }
-}
-
-##################################################
-# IP Set for Allowlist (optional)
-##################################################
-
-resource "aws_wafv2_ip_set" "allowlist" {
-  count = length(var.ip_allowlist) > 0 ? 1 : 0
-
-  name               = "${var.project_name}-allowlist"
-  description        = "Allowed IP addresses"
-  scope              = "REGIONAL"
-  ip_address_version = "IPV4"
-  addresses          = var.ip_allowlist
-
-  tags = {
-    Name = "${var.project_name}-allowlist"
   }
 }
 

@@ -54,10 +54,6 @@ module "waf" {
 
   project_name = var.project_name
   alb_arn      = module.alb.alb_arn
-
-  rate_limit_enabled  = true
-  rate_limit_requests = var.waf_rate_limit
-  ip_allowlist        = var.waf_ip_allowlist
 }
 
 module "ecs" {
