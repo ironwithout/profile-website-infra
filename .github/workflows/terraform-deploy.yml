@@ -1,0 +1,73 @@
+name: Deploy Terraform
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.5"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        id: aws-creds
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: GitHubActions-Terraform
+          mask-aws-account-id: true
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.S3_STATE_BUCKET }}" \
+            -backend-config="key=${{ secrets.S3_STATE_KEY }}" \
+            -backend-config="region=${{ secrets.AWS_REGION }}"
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan -no-color | sed 's/${{ steps.aws-creds.outputs.aws-account-id }}/[REDACTED]/g'
+        continue-on-error: true
+        env:
+          TF_VAR_ecr_repository_arns: ${{ secrets.ECR_REPOSITORY_ARNS }}
+          TF_VAR_ecs_service_images: ${{ secrets.ECS_SERVICE_IMAGES }}
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan | sed 's/${{ steps.aws-creds.outputs.aws-account-id }}/[REDACTED]/g'
+
+      - name: Terraform Output
+        if: success()
+        run: terraform output -json
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

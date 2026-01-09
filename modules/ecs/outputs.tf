@@ -3,11 +3,13 @@
 output "cluster_id" {
   description = "ECS cluster ID"
   value       = aws_ecs_cluster.main.id
+  sensitive   = true
 }
 
 output "cluster_arn" {
   description = "ECS cluster ARN"
   value       = aws_ecs_cluster.main.arn
+  sensitive   = true
 }
 
 output "cluster_name" {
@@ -28,6 +30,7 @@ output "service_names" {
 output "task_definition_arns" {
   description = "Map of service names to task definition ARNs"
   value       = { for k, v in aws_ecs_task_definition.service : k => v.arn }
+  sensitive   = true
 }
 
 output "task_definition_families" {

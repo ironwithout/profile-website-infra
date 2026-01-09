@@ -53,6 +53,7 @@ output "alb_zone_id" {
 output "acm_certificate_arn" {
   description = "ARN of the ACM certificate"
   value       = module.acm.certificate_arn
+  sensitive   = true
 }
 
 output "acm_certificate_status" {
@@ -74,6 +75,7 @@ output "acm_validation_instructions" {
 output "waf_web_acl_arn" {
   description = "ARN of the WAF Web ACL"
   value       = module.waf.web_acl_arn
+  sensitive   = true
 }
 
 output "waf_web_acl_name" {

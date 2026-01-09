@@ -1,6 +1,15 @@
 # Root Terraform configuration
 # Orchestrates modules for ECS Fargate deployment
 
+locals {
+  ecr_repository_arns = [
+    "arn:aws:ecr:us-east-1:${data.aws_caller_identity.current.account_id}:repository/web/profile"
+  ]
+  ecs_service_images = {
+    web = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/web/profile:fb888f87e417ecfe3bbff6fa2df5e00e3be59aff"
+  }
+}
+
 module "network" {
   source = "./modules/network"
 
@@ -13,7 +22,7 @@ module "iam" {
   source = "./modules/iam"
 
   project_name        = var.project_name
-  ecr_repository_arns = var.ecr_repository_arns
+  ecr_repository_arns = local.ecr_repository_arns
 }
 
 module "acm" {
@@ -66,23 +75,8 @@ module "ecs" {
   task_role_arn           = module.iam.task_role_arn
   aws_region              = var.aws_region
 
-  # Pass simplified services with computed defaults
-  services = {
-    for name, config in var.ecs_services : name => {
-      container_name            = config.container_name
-      container_port            = config.container_port
-      container_image           = config.container_image
-      container_image_tag       = config.container_image_tag
-      task_cpu                  = config.task_cpu
-      task_memory               = config.task_memory
-      desired_count             = config.desired_count
-      launch_type               = config.launch_type
-      log_retention_days        = config.log_retention_days
-      environment_variables     = config.environment_variables
-      health_check_command      = config.health_check_command
-      health_check_grace_period = config.health_check_grace_period
-    }
-  }
+  service_images = local.ecs_service_images
+  services       = var.ecs_services
 
   alb_target_group_arns = module.alb.target_group_arns
 }

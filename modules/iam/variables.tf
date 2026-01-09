@@ -1,5 +1,4 @@
 # IAM Module Variables
-
 variable "project_name" {
   description = "Project name for resource naming (kebab-case only)"
   type        = string
@@ -13,6 +12,7 @@ variable "project_name" {
 variable "ecr_repository_arns" {
   description = "List of ECR repository ARNs that ECS can pull from"
   type        = list(string)
+  sensitive   = true
 
   validation {
     condition     = length(var.ecr_repository_arns) > 0
