@@ -63,9 +63,9 @@ resource "aws_ecs_task_definition" "service" {
       ]
 
       environment = [
-        for k, v in each.value.environment_variables : {
-          name  = k
-          value = v
+        for key, value in each.value.environment_variables : {
+          name  = key
+          value = value
         }
       ]
 
