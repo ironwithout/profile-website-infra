@@ -42,7 +42,7 @@ Tasks run in awsvpc network mode with:
 | Name | Description | Type |
 |------|-------------|------|
 | `project_name` | Project name (kebab-case) | `string` |
-| `environment` | Environment (dev/prod/staging) | `string` |
+| `environment` | Environment (dev/prod) | `string` |
 | `subnet_ids` | Subnet IDs for ECS tasks | `list(string)` |
 | `ecs_security_group_id` | Security group ID for ECS tasks | `string` |
 | `task_execution_role_arn` | Task execution role ARN | `string` |

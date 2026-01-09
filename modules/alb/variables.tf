@@ -11,12 +11,12 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Environment name (dev, prod, staging)"
+  description = "Environment name (dev, prod)"
   type        = string
 
   validation {
-    condition     = contains(["dev", "prod", "staging"], var.environment)
-    error_message = "Environment must be dev, prod, or staging."
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "Environment must be dev or prod."
   }
 }
 
@@ -47,18 +47,18 @@ variable "enable_deletion_protection" {
 }
 
 variable "services" {
-  description = "Map of service configurations for ALB target groups"
+  description = "Map of service routing configurations for ALB"
   type = map(object({
-    container_port                   = number
-    health_check_healthy_threshold   = number
-    health_check_unhealthy_threshold = number
-    health_check_timeout             = number
-    health_check_interval            = number
-    health_check_path                = string
-    health_check_matcher             = string
-    deregistration_delay             = number
-    listener_rule_priority           = number
-    path_pattern                     = string
-    host_header                      = string
+    container_port         = number
+    health_check_path      = string
+    health_check_matcher   = string
+    health_check_interval  = number
+    health_check_timeout   = number
+    healthy_threshold      = number
+    unhealthy_threshold    = number
+    deregistration_delay   = number
+    listener_rule_priority = number
+    path_pattern           = string
+    host_header            = optional(string)
   }))
 }

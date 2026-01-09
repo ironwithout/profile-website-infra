@@ -30,18 +30,18 @@ module "alb" {
   enable_deletion_protection = var.alb_deletion_protection
 
   services = {
-    for name, config in var.ecs_services : name => {
-      container_port                   = config.container_port
-      health_check_healthy_threshold   = config.alb_health_check_healthy_threshold
-      health_check_unhealthy_threshold = config.alb_health_check_unhealthy_threshold
-      health_check_timeout             = config.health_check_timeout
-      health_check_interval            = config.health_check_interval
-      health_check_path                = config.alb_health_check_path
-      health_check_matcher             = config.alb_health_check_matcher
-      deregistration_delay             = config.alb_deregistration_delay
-      listener_rule_priority           = config.alb_listener_rule_priority
-      path_pattern                     = config.alb_path_pattern
-      host_header                      = config.alb_host_header
+    for name, route_config in var.alb_routes : name => {
+      container_port         = var.ecs_services[name].container_port
+      health_check_path      = route_config.health_check_path
+      health_check_matcher   = route_config.health_check_matcher
+      health_check_interval  = route_config.health_check_interval
+      health_check_timeout   = route_config.health_check_timeout
+      healthy_threshold      = route_config.healthy_threshold
+      unhealthy_threshold    = route_config.unhealthy_threshold
+      deregistration_delay   = route_config.deregistration_delay
+      listener_rule_priority = route_config.priority
+      path_pattern           = route_config.path_pattern
+      host_header            = route_config.host_header
     }
   }
 }
@@ -58,6 +58,37 @@ module "ecs" {
   task_execution_role_arn   = module.iam.task_execution_role_arn
   task_role_arn             = module.iam.task_role_arn
   aws_region                = data.aws_region.current.name
-  services                  = var.ecs_services
-  alb_target_group_arns     = var.enable_alb ? module.alb[0].target_group_arns : {}
+
+  # Pass simplified services with computed defaults
+  services = {
+    for name, config in var.ecs_services : name => {
+      container_name            = config.container_name
+      container_port            = config.container_port
+      container_image           = config.container_image
+      container_image_tag       = config.container_image_tag
+      task_cpu                  = config.task_cpu
+      task_memory               = config.task_memory
+      desired_count             = config.desired_count
+      launch_type               = config.launch_type
+      log_retention_days        = config.log_retention_days
+      environment_variables     = config.environment_variables
+      health_check_command      = config.health_check_command
+      health_check_grace_period = config.health_check_grace_period
+      enable_execute_command    = config.enable_execute_command
+
+      # Auto-determine subnet placement: private if ALB enabled, public otherwise
+      use_private_subnets = coalesce(
+        config.use_private_subnets,
+        var.enable_alb
+      )
+
+      # Auto-determine public IP: true for public subnets, false for private
+      assign_public_ip = coalesce(
+        config.assign_public_ip,
+        !var.enable_alb
+      )
+    }
+  }
+
+  alb_target_group_arns = var.enable_alb ? module.alb[0].target_group_arns : {}
 }

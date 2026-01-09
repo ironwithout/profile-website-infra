@@ -12,7 +12,7 @@ Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orch
 
 **Naming**: `${project_name}-${environment}-<resource-type>` (e.g., `myapp-dev-vpc`)
 - `project_name`: kebab-case only (validated)
-- `environment`: `dev|prod|staging` (validated)
+- `environment`: `dev|prod` (validated)
 
 **Tags**: Auto-applied via `versions.tf` `default_tags` - never add `Project`, `Environment`, or `ManagedBy` tags manually.
 
@@ -47,9 +47,9 @@ backend "s3" {
 }
 
 # environments/dev/backend.hcl
-bucket = "terraform-state-<ACCOUNT_ID>-<REGION>"
+bucket = "terraform-state-<ACCOUNT_ID>"
 region = "us-east-1"
-key    = "aws-iac/ecs-webapp/dev/terraform.tfstate"
+key    = "dev/terraform.tfstate"
 ```
 
 ### Commands
@@ -69,5 +69,6 @@ Follow **incremental least-privilege approach** when adding modules. Update poli
 
 1. Create `modules/<name>/` with required files
 2. Update root `main.tf` to invoke module
-3. Add IAM permissions to `iam-policies/terraform-deployer-<scope>.json`
-4. Update IAM policy version in AWS (see `iam-policies/README.md`)
+3. Add IAM permissions to module's `iam-policy.json`
+4. Combine with other module policies using `tooling/create_iam_policies.sh`
+5. Update IAM policy version for your IAM principal in AWS

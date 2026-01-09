@@ -12,9 +12,9 @@ Environment-specific configuration for the development environment.
 
 2. Edit `backend.hcl` with your AWS account ID:
    ```hcl
-   bucket = "terraform-state-<YOUR_ACCOUNT_ID>-us-east-1"
+   bucket = "terraform-state-<YOUR_ACCOUNT_ID>"
    region = "us-east-1"
-   key    = "aws-iac/ecs-webapp/dev/terraform.tfstate"
+   key    = "dev/terraform.tfstate"
    ```
 
 3. Edit `terraform.tfvars` with specific values (project name, region, etc.)
@@ -28,12 +28,6 @@ Environment-specific configuration for the development environment.
    ```
 
 Each environment has its own S3 state key (`dev/terraform.tfstate` vs `prod/terraform.tfstate`) to keep states isolated.
-
-## Configuration
-
-- **Cost Optimization**: Uses Fargate Spot, shorter log retention, minimal replicas
-- **Network**: Uses public subnets with auto-assign public IP (no NAT Gateway)
-- **Secrets**: Stored in SSM Parameter Store, referenced in task definitions
 
 ## Important
 

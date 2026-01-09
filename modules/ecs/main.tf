@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "service" {
   container_definitions = jsonencode([
     {
       name      = each.value.container_name
-      image     = each.value.container_image
+      image     = "${each.value.container_image}:${each.value.container_image_tag}"
       essential = true
 
       portMappings = [
@@ -62,7 +62,12 @@ resource "aws_ecs_task_definition" "service" {
         }
       ]
 
-      environment = each.value.container_environment_variables
+      environment = [
+        for key, value in each.value.environment_variables : {
+          name  = key
+          value = value
+        }
+      ]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -73,13 +78,13 @@ resource "aws_ecs_task_definition" "service" {
         }
       }
 
-      healthCheck = {
+      healthCheck = each.value.health_check_command != null ? {
         command     = each.value.health_check_command
-        interval    = each.value.health_check_interval
-        timeout     = each.value.health_check_timeout
-        retries     = each.value.health_check_retries
-        startPeriod = each.value.health_check_start_period
-      }
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      } : null
     }
   ])
 
@@ -105,13 +110,17 @@ resource "aws_ecs_service" "service" {
     assign_public_ip = each.value.assign_public_ip
   }
 
-  deployment_maximum_percent         = each.value.deployment_maximum_percent
-  deployment_minimum_healthy_percent = each.value.deployment_minimum_healthy_percent
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
 
   deployment_circuit_breaker {
-    enable   = each.value.enable_deployment_circuit_breaker
-    rollback = each.value.enable_deployment_rollback
+    enable   = true
+    rollback = true
   }
+
+  enable_execute_command = each.value.enable_execute_command
+
+  health_check_grace_period_seconds = lookup(var.alb_target_group_arns, each.key, null) != null ? each.value.health_check_grace_period : null
 
   # Register with ALB target group if ALB is enabled
   dynamic "load_balancer" {

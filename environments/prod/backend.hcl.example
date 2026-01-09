@@ -1,3 +1,3 @@
-bucket = "terraform-state-987654321098-us-east-1"
+bucket = "terraform-state-profile-website-987654321098"
 region = "us-east-1"
-key    = "aws-iac/ecs-webapp/prod/terraform.tfstate"
+key    = "prod/terraform.tfstate"
