@@ -10,16 +10,6 @@ variable "project_name" {
   }
 }
 
-variable "environment" {
-  description = "Environment name (dev, prod)"
-  type        = string
-
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be dev or prod."
-  }
-}
-
 variable "ecr_repository_arns" {
   description = "List of ECR repository ARNs that ECS can pull from"
   type        = list(string)

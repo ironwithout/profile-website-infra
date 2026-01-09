@@ -19,7 +19,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-vpc"
+    Name = "${var.project_name}-vpc"
   }
 }
 
@@ -28,7 +28,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-igw"
+    Name = "${var.project_name}-igw"
   }
 }
 
@@ -41,7 +41,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
+    Name = "${var.project_name}-public-subnet-${count.index + 1}"
     Type = "public"
   }
 }
@@ -54,7 +54,7 @@ resource "aws_subnet" "private" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-private-subnet-${count.index + 1}"
+    Name = "${var.project_name}-private-subnet-${count.index + 1}"
     Type = "private"
   }
 }
@@ -69,7 +69,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-public-rt"
+    Name = "${var.project_name}-public-rt"
   }
 }
 
@@ -82,7 +82,7 @@ resource "aws_route_table_association" "public" {
 
 # Security Group for ALB
 resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-${var.environment}-alb-sg"
+  name        = "${var.project_name}-alb-sg"
   description = "Security group for Application Load Balancer"
   vpc_id      = aws_vpc.main.id
 
@@ -111,13 +111,13 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-alb-sg"
+    Name = "${var.project_name}-alb-sg"
   }
 }
 
 # Security Group for ECS Tasks
 resource "aws_security_group" "ecs" {
-  name        = "${var.project_name}-${var.environment}-ecs-sg"
+  name        = "${var.project_name}-ecs-sg"
   description = "Security group for ECS Fargate tasks"
   vpc_id      = aws_vpc.main.id
 
@@ -130,7 +130,7 @@ resource "aws_security_group" "ecs" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-sg"
+    Name = "${var.project_name}-ecs-sg"
   }
 }
 

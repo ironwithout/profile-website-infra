@@ -28,11 +28,11 @@ resource "aws_ecs_cluster" "main" {
 resource "aws_cloudwatch_log_group" "service" {
   for_each = var.services
 
-  name              = "/ecs/${var.project_name}-${var.environment}/${each.key}"
+  name              = "/ecs/${var.project_name}/${each.key}"
   retention_in_days = each.value.log_retention_days
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-logs"
+    Name    = "${var.project_name}-${each.key}-logs"
     Service = each.key
   }
 }
@@ -41,7 +41,7 @@ resource "aws_cloudwatch_log_group" "service" {
 resource "aws_ecs_task_definition" "service" {
   for_each = var.services
 
-  family                   = "${var.project_name}-${var.environment}-${each.key}"
+  family                   = "${var.project_name}-${each.key}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = each.value.task_cpu
@@ -89,7 +89,7 @@ resource "aws_ecs_task_definition" "service" {
   ])
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-task"
+    Name    = "${var.project_name}-${each.key}-task"
     Service = each.key
   }
 }
@@ -98,7 +98,7 @@ resource "aws_ecs_task_definition" "service" {
 resource "aws_ecs_service" "service" {
   for_each = var.services
 
-  name            = "${var.project_name}-${var.environment}-${each.key}-service"
+  name            = "${var.project_name}-${each.key}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.service[each.key].arn
   desired_count   = each.value.desired_count
@@ -133,7 +133,7 @@ resource "aws_ecs_service" "service" {
   }
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-service"
+    Name    = "${var.project_name}-${each.key}-service"
     Service = each.key
   }
 }

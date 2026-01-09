@@ -1,8 +1,5 @@
-# Production Environment Configuration
-
 aws_account_id = "123456789012"
 aws_region     = "us-east-1"
-environment    = "prod"
 
 # ECR Repository Configuration
 ecr_repository_arns = [
@@ -13,7 +10,7 @@ ecr_repository_arns = [
 # ECS Cluster
 enable_container_insights = "enabled"
 
-# ECS Services - Production Configuration
+# ECS Services
 ecs_services = {
   api = {
     # Required
@@ -55,10 +52,6 @@ ecs_services = {
     }
   }
 }
-
-# ALB Configuration (enabled for production)
-enable_alb              = true
-alb_deletion_protection = true
 
 # ALB Routing - Separate from service definitions
 alb_routes = {

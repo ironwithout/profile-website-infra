@@ -5,7 +5,6 @@ module "network" {
   source = "./modules/network"
 
   project_name       = var.project_name
-  environment        = var.environment
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
 }
@@ -14,20 +13,29 @@ module "iam" {
   source = "./modules/iam"
 
   project_name        = var.project_name
-  environment         = var.environment
   ecr_repository_arns = var.ecr_repository_arns
 }
 
+module "acm" {
+  count  = var.enable_alb && var.domain_name != "" ? 1 : 0
+  source = "./modules/acm"
+
+  project_name = var.project_name
+  domain_name  = var.domain_name
+  include_www  = var.include_www_subdomain
+}
+
 module "alb" {
-  count  = var.enable_alb ? 1 : 0
   source = "./modules/alb"
 
   project_name               = var.project_name
-  environment                = var.environment
   vpc_id                     = module.network.vpc_id
   alb_security_group_id      = module.network.alb_security_group_id
   public_subnet_ids          = module.network.public_subnet_ids
   enable_deletion_protection = var.alb_deletion_protection
+
+  # Pass certificate ARN if ACM module is enabled
+  certificate_arn = var.domain_name != "" ? module.acm[0].certificate_arn : null
 
   services = {
     for name, route_config in var.alb_routes : name => {
@@ -46,11 +54,21 @@ module "alb" {
   }
 }
 
+module "waf" {
+  source = "./modules/waf"
+
+  project_name    = var.project_name
+  alb_arn         = module.alb[0].alb_arn
+
+  rate_limit_enabled  = true
+  rate_limit_requests = var.waf_rate_limit
+  ip_allowlist        = var.waf_ip_allowlist
+}
+
 module "ecs" {
   source = "./modules/ecs"
 
   project_name              = var.project_name
-  environment               = var.environment
   enable_container_insights = var.enable_container_insights
   public_subnet_ids         = module.network.public_subnet_ids
   private_subnet_ids        = module.network.private_subnet_ids
@@ -90,5 +108,5 @@ module "ecs" {
     }
   }
 
-  alb_target_group_arns = var.enable_alb ? module.alb[0].target_group_arns : {}
+  alb_target_group_arns = module.alb[0].target_group_arns
 }

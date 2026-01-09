@@ -24,16 +24,6 @@ variable "project_name" {
   }
 }
 
-variable "environment" {
-  description = "Environment name (dev, prod)"
-  type        = string
-
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be one of: dev, or prod."
-  }
-}
-
 # Network
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
@@ -102,6 +92,38 @@ variable "alb_deletion_protection" {
   description = "Enable deletion protection for ALB"
   type        = bool
   default     = false
+}
+
+# HTTPS/TLS Configuration
+variable "domain_name" {
+  description = "Primary domain name for SSL certificate (e.g., example.com). Leave empty to disable HTTPS."
+  type        = string
+  default     = ""
+}
+
+variable "include_www_subdomain" {
+  description = "Include www subdomain in SSL certificate"
+  type        = bool
+  default     = true
+}
+
+# WAF Configuration
+variable "enable_waf" {
+  description = "Enable AWS WAF for ALB protection"
+  type        = bool
+  default     = false
+}
+
+variable "waf_rate_limit" {
+  description = "Maximum requests per 5 minutes from single IP (100-20000000)"
+  type        = number
+  default     = 2000
+}
+
+variable "waf_ip_allowlist" {
+  description = "List of IP addresses (CIDR) to always allow through WAF"
+  type        = list(string)
+  default     = []
 }
 
 # ALB routing configuration (only used when enable_alb = true)

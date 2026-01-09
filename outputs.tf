@@ -48,3 +48,35 @@ output "alb_zone_id" {
   description = "Zone ID of the ALB for Route53"
   value       = var.enable_alb ? module.alb[0].alb_zone_id : null
 }
+
+# ACM outputs (conditional)
+output "acm_certificate_arn" {
+  description = "ARN of the ACM certificate"
+  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].certificate_arn : null
+}
+
+output "acm_certificate_status" {
+  description = "Status of the ACM certificate"
+  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].certificate_status : null
+}
+
+output "acm_validation_records" {
+  description = "DNS validation records to add in Cloudflare (IMPORTANT: Add these to validate certificate)"
+  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].domain_validation_options : []
+}
+
+output "acm_validation_instructions" {
+  description = "Instructions for validating certificate in Cloudflare"
+  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].validation_instructions : ""
+}
+
+# WAF outputs (conditional)
+output "waf_web_acl_arn" {
+  description = "ARN of the WAF Web ACL"
+  value       = var.enable_alb && var.enable_waf ? module.waf[0].web_acl_arn : null
+}
+
+output "waf_web_acl_name" {
+  description = "Name of the WAF Web ACL"
+  value       = var.enable_alb && var.enable_waf ? module.waf[0].web_acl_name : null
+}
