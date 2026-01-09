@@ -29,7 +29,7 @@ output "domain_validation_options" {
 
 output "validation_instructions" {
   description = "Instructions for manual DNS validation in Cloudflare"
-  value = <<-EOT
+  value       = <<-EOT
     ⚠️  MANUAL ACTION REQUIRED: Add these DNS records in Cloudflare
     
     For each domain validation option above:

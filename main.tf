@@ -26,13 +26,11 @@ module "acm" {
 module "alb" {
   source = "./modules/alb"
 
-  project_name               = var.project_name
-  vpc_id                     = module.network.vpc_id
-  alb_security_group_id      = module.network.alb_security_group_id
-  public_subnet_ids          = module.network.public_subnet_ids
-
-  # Pass certificate ARN if ACM module is enabled
-  certificate_arn = var.domain_name != "" ? module.acm[0].certificate_arn : null
+  project_name          = var.project_name
+  vpc_id                = module.network.vpc_id
+  alb_security_group_id = module.network.alb_security_group_id
+  public_subnet_ids     = module.network.public_subnet_ids
+  certificate_arn       = module.acm.certificate_arn
 
   services = {
     for name, route_config in var.alb_routes : name => {
@@ -54,8 +52,8 @@ module "alb" {
 module "waf" {
   source = "./modules/waf"
 
-  project_name    = var.project_name
-  alb_arn         = module.alb[0].alb_arn
+  project_name = var.project_name
+  alb_arn      = module.alb.alb_arn
 
   rate_limit_enabled  = true
   rate_limit_requests = var.waf_rate_limit
@@ -65,13 +63,13 @@ module "waf" {
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name              = var.project_name
-  public_subnet_ids         = module.network.public_subnet_ids
-  private_subnet_ids        = module.network.private_subnet_ids
-  ecs_security_group_id     = module.network.ecs_security_group_id
-  task_execution_role_arn   = module.iam.task_execution_role_arn
-  task_role_arn             = module.iam.task_role_arn
-  aws_region                = data.aws_region.current.name
+  project_name            = var.project_name
+  public_subnet_ids       = module.network.public_subnet_ids
+  private_subnet_ids      = module.network.private_subnet_ids
+  ecs_security_group_id   = module.network.ecs_security_group_id
+  task_execution_role_arn = module.iam.task_execution_role_arn
+  task_role_arn           = module.iam.task_role_arn
+  aws_region              = data.aws_region.current.name
 
   # Pass simplified services with computed defaults
   services = {
@@ -91,9 +89,9 @@ module "ecs" {
       enable_execute_command    = config.enable_execute_command
 
       use_private_subnets = config.use_private_subnets
-      assign_public_ip = config.assign_public_ip
+      assign_public_ip    = config.assign_public_ip
     }
   }
 
-  alb_target_group_arns = module.alb[0].target_group_arns
+  alb_target_group_arns = module.alb.target_group_arns
 }

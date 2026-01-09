@@ -7,9 +7,6 @@ ecr_repository_arns = [
   "arn:aws:ecr:us-east-1:123456789012:repository/profile-worker"
 ]
 
-# ECS Cluster
-enable_container_insights = "enabled"
-
 # ECS Services
 ecs_services = {
   api = {
@@ -52,6 +49,8 @@ ecs_services = {
     }
   }
 }
+
+domain_name = "example.com"
 
 # ALB Routing - Separate from service definitions
 alb_routes = {
