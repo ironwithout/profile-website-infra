@@ -32,5 +32,5 @@ output "target_group_names" {
 
 output "http_listener_arn" {
   description = "ARN of the HTTP listener"
-  value       = aws_lb_listener.http.arn
+  value       = aws_lb_listener.http_redirect[0].arn
 }

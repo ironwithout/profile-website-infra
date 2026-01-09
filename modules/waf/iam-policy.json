@@ -21,7 +21,9 @@
         "wafv2:ListResourcesForWebACL",
         "wafv2:TagResource",
         "wafv2:UntagResource",
-        "wafv2:ListTagsForResource"
+        "wafv2:ListTagsForResource",
+        "elasticloadbalancing:SetWebACL",
+        "elasticloadbalancing:DescribeLoadBalancers"
       ],
       "Resource": "*"
     },

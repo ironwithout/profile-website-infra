@@ -75,6 +75,8 @@ resource "aws_lb_target_group" "service" {
 
 # HTTPS Listener (primary, if certificate provided)
 resource "aws_lb_listener" "https" {
+  count = 1
+
   load_balancer_arn = aws_lb.main.arn
   port              = 443
   protocol          = "HTTPS"
@@ -96,37 +98,25 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-# HTTP Listener (redirect to HTTPS or serve directly)
-resource "aws_lb_listener" "http" {
+# HTTP Listener - Redirect to HTTPS (when certificate exists)
+resource "aws_lb_listener" "http_redirect" {
+  count = 1
+
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
 
-  # If HTTPS enabled, redirect. Otherwise, serve directly
   default_action {
-    type = var.certificate_arn != null ? "redirect" : "fixed-response"
-
-    dynamic "redirect" {
-      for_each = var.certificate_arn != null ? [1] : []
-      content {
-        port        = "443"
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
-      }
-    }
-
-    dynamic "fixed_response" {
-      for_each = var.certificate_arn == null ? [1] : []
-      content {
-        content_type = "text/plain"
-        message_body = "Service not found"
-        status_code  = "404"
-      }
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
 
   tags = {
-    Name = "${var.project_name}-http-listener"
+    Name = "${var.project_name}-http-redirect-listener"
   }
 }
 
@@ -137,8 +127,8 @@ resource "aws_lb_listener" "http" {
 resource "aws_lb_listener_rule" "service" {
   for_each = var.services
 
-  # Use HTTPS listener if certificate provided, otherwise HTTP
-  listener_arn = aws_lb_listener.https.arn
+  # Use HTTPS listener if certificate provided, otherwise HTTP direct listener
+  listener_arn = aws_lb_listener.https[0].arn
   priority     = each.value.listener_rule_priority
 
   action {
