@@ -122,7 +122,7 @@ variable "alb_routes" {
   default = {}
 
   validation {
-    condition     = !var.enable_alb || length(var.alb_routes) > 0
+    condition     = var.enable_alb && length(var.alb_routes) > 0
     error_message = "When ALB is enabled, alb_routes must be configured for at least one service."
   }
 }

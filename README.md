@@ -239,13 +239,13 @@ terraform plan -var-file=environments/prod/terraform.tfvars
 
 ### Implemented Modules
 
-| Module | Status | Description |
-|--------|--------|-------------|
-| **network** | ✅ Implemented | VPC, public subnets, security groups with source-based rules |
-| **iam** | ✅ Implemented | ECS task execution role, task role with ECR permissions |
-| **ecs** | ✅ Implemented | Fargate cluster, services, CloudWatch logs |
-| **alb** | ✅ Implemented | Application Load Balancer with path/host routing (optional) |
-| **s3** | ✅ Policy Only | IAM permissions for Terraform backend (no resources) |
+| Module | Description |
+|--------|-------------|
+| **network** | VPC, public subnets, security groups with source-based rules |
+| **iam** | ECS task execution role, task role with ECR permissions |
+| **ecs** | Fargate cluster, services, CloudWatch logs |
+| **alb** | Application Load Balancer with path/host routing (optional) |
+| **s3** | IAM permissions for Terraform backend (no resources) |
 
 Each module includes:
 - Complete resource definitions in `main.tf`
