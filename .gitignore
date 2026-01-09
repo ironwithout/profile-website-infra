@@ -9,12 +9,10 @@
 crash.log
 crash.*.log
 
-# Environment-specific variables (may contain secrets)
-environments/**/terraform.tfvars
 *.tfvars
 
 # Backend configuration (contains account-specific data)
-environments/**/backend.hcl
+backend.hcl
 
 # Exclude override files
 override.tf

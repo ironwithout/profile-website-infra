@@ -1,8 +1,5 @@
-# Production Environment Configuration
-
 aws_account_id = "123456789012"
 aws_region     = "us-east-1"
-environment    = "prod"
 
 # ECR Repository Configuration
 ecr_repository_arns = [
@@ -10,10 +7,7 @@ ecr_repository_arns = [
   "arn:aws:ecr:us-east-1:123456789012:repository/profile-worker"
 ]
 
-# ECS Cluster
-enable_container_insights = "enabled"
-
-# ECS Services - Production Configuration
+# ECS Services
 ecs_services = {
   api = {
     # Required
@@ -22,11 +16,11 @@ ecs_services = {
     container_image_tag = "v1.0.0"
     container_port      = 3000
 
-    # Production overrides
+    # Optional overrides
     task_cpu            = "1024"
     task_memory         = "2048"
     desired_count       = 3
-    launch_type         = "FARGATE" # Standard Fargate for production
+    launch_type         = "FARGATE"
     log_retention_days  = 30
 
     environment_variables = {
@@ -44,7 +38,7 @@ ecs_services = {
     container_image_tag = "v1.0.0"
     container_port  = 8080
 
-    container_image_tag = "v1.0.0"
+    # Optional overrides
     task_cpu            = "512"
     task_memory         = "1024"
     desired_count       = 2
@@ -56,9 +50,7 @@ ecs_services = {
   }
 }
 
-# ALB Configuration (enabled for production)
-enable_alb              = true
-alb_deletion_protection = true
+domain_name = "example.com"
 
 # ALB Routing - Separate from service definitions
 alb_routes = {

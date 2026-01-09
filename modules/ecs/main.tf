@@ -12,15 +12,15 @@ terraform {
 
 # ECS Cluster (shared by all services)
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-${var.environment}-cluster"
+  name = "${var.project_name}-cluster"
 
   setting {
     name  = "containerInsights"
-    value = var.enable_container_insights
+    value = "enabled"
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-cluster"
+    Name = "${var.project_name}-cluster"
   }
 }
 
@@ -28,11 +28,11 @@ resource "aws_ecs_cluster" "main" {
 resource "aws_cloudwatch_log_group" "service" {
   for_each = var.services
 
-  name              = "/ecs/${var.project_name}-${var.environment}/${each.key}"
+  name              = "/ecs/${var.project_name}/${each.key}"
   retention_in_days = each.value.log_retention_days
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-logs"
+    Name    = "${var.project_name}-${each.key}-logs"
     Service = each.key
   }
 }
@@ -41,7 +41,7 @@ resource "aws_cloudwatch_log_group" "service" {
 resource "aws_ecs_task_definition" "service" {
   for_each = var.services
 
-  family                   = "${var.project_name}-${var.environment}-${each.key}"
+  family                   = "${var.project_name}-${each.key}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = each.value.task_cpu
@@ -89,7 +89,7 @@ resource "aws_ecs_task_definition" "service" {
   ])
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-task"
+    Name    = "${var.project_name}-${each.key}-task"
     Service = each.key
   }
 }
@@ -98,16 +98,16 @@ resource "aws_ecs_task_definition" "service" {
 resource "aws_ecs_service" "service" {
   for_each = var.services
 
-  name            = "${var.project_name}-${var.environment}-${each.key}-service"
+  name            = "${var.project_name}-${each.key}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.service[each.key].arn
   desired_count   = each.value.desired_count
   launch_type     = each.value.launch_type
 
   network_configuration {
-    subnets          = each.value.use_private_subnets ? var.private_subnet_ids : var.public_subnet_ids
+    subnets          = var.subnet_ids
     security_groups  = [var.ecs_security_group_id]
-    assign_public_ip = each.value.assign_public_ip
+    assign_public_ip = true
   }
 
   deployment_maximum_percent         = 200
@@ -117,8 +117,6 @@ resource "aws_ecs_service" "service" {
     enable   = true
     rollback = true
   }
-
-  enable_execute_command = each.value.enable_execute_command
 
   health_check_grace_period_seconds = lookup(var.alb_target_group_arns, each.key, null) != null ? each.value.health_check_grace_period : null
 
@@ -133,7 +131,7 @@ resource "aws_ecs_service" "service" {
   }
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-service"
+    Name    = "${var.project_name}-${each.key}-service"
     Service = each.key
   }
 }

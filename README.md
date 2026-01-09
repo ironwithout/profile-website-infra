@@ -11,8 +11,8 @@ Internet → [ALB (HTTP/HTTPS)] → ECS Fargate Tasks → ECR
 ```
 
 **Flexible Deployment Options**:
-- Direct container access (no ALB) for development
-- ALB with path/host-based routing for production
+- Direct container access (no ALB) for minimal setup
+- ALB with path/host-based routing for web applications
 - Public or private subnet placement with auto-configuration
 
 **Module Architecture**: Root orchestrates reusable, self-contained modules.
@@ -39,16 +39,9 @@ Internet → [ALB (HTTP/HTTPS)] → ECS Fargate Tasks → ECR
 │   ├── iam/                # ECS task execution and task roles
 │   ├── ecs/                # Fargate cluster and services
 │   ├── alb/                # Application Load Balancer (optional)
+│   ├── acm/                # SSL/TLS certificates (optional)
+│   ├── waf/                # Web Application Firewall (optional)
 │   └── s3/                 # IAM policy for backend state (no resources)
-├── environments/           # Environment-specific configs
-│   ├── dev/
-│   │   ├── backend.hcl
-│   │   ├── terraform.tfvars.example
-│   │   └── README.md
-│   └── prod/
-│       ├── backend.hcl.example
-│       ├── terraform.tfvars.example
-│       └── README.md
 └── tooling/
     └── create_iam_policies.sh  # IAM policy management script
 ```
@@ -63,7 +56,7 @@ Internet → [ALB (HTTP/HTTPS)] → ECS Fargate Tasks → ECR
 **Key Patterns**:
 - Root orchestrates modules, never defines resources directly
 - Each module is self-contained with own IAM policy
-- Environment isolation via separate S3 state files
+- S3 backend for remote state storage
 - Simplified variable interface with sensible defaults
 
 ## Quick Start
@@ -75,8 +68,7 @@ Create an S3 bucket for Terraform state:
 ```bash
 # Set your values
 export AWS_REGION="us-east-1"
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export BUCKET_NAME="terraform-state-profile-website-${AWS_ACCOUNT_ID}"
+export BUCKET_NAME="bucket-name"
 
 # Create bucket
 aws s3api create-bucket --bucket "${BUCKET_NAME}" --region "${AWS_REGION}"
@@ -116,10 +108,9 @@ Each module has an `iam-policy.json` defining required permissions. Use the poli
 # Attach policies to your IAM user/role via AWS Console or CLI
 ```
 
-### 3. Configure Environment
+### 3. Configure Variables
 
 ```bash
-cd environments/dev
 cp terraform.tfvars.example terraform.tfvars
 cp backend.hcl.example backend.hcl
 
@@ -128,33 +119,32 @@ cp backend.hcl.example backend.hcl
 #   - AWS account ID and region
 #   - ECR repository ARNs
 #   - ECS service definitions
-#   - ALB configuration (if needed)
+#   - ALB, ACM, WAF configuration
 ```
 
 ### 4. Initialize Terraform
 
 ```bash
-cd ../..
-terraform init -backend-config=environments/dev/backend.hcl
+terraform init -backend-config=backend.hcl
 ```
 
 ### 5. Deploy
 
 ```bash
-terraform plan -var-file=environments/dev/terraform.tfvars
-terraform apply -var-file=environments/dev/terraform.tfvars
+terraform plan -var-file=terraform.tfvars
+terraform apply -var-file=terraform.tfvars
 ```
 
 ## Key Concepts
 
 ### Naming Convention
 
-All resources follow: `${project_name}-${environment}-<resource-type>`
+All resources follow: `${project_name}-<resource-type>`
 
 Examples:
-- VPC: `myapp-dev-vpc`
-- ECS Cluster: `myapp-prod-ecs-cluster`
-- ALB: `myapp-dev-alb`
+- VPC: `myapp-vpc`
+- ECS Cluster: `myapp-ecs-cluster`
+- ALB: `myapp-alb`
 
 ### Simplified Service Configuration
 
@@ -186,10 +176,10 @@ ecs_services = {
 The ALB module is **optional** and conditionally deployed:
 
 ```hcl
-# Disable for direct container access (dev)
+# Disable for direct container access
 enable_alb = false
 
-# Enable with path/host-based routing (prod)
+# Enable with path/host-based routing
 enable_alb = true
 alb_routes = {
   api = {
@@ -210,11 +200,11 @@ alb_routes = {
 - Integration with ECS target groups
 - Deletion protection (configurable)
 
-### Environment Management
+### Backend Configuration
 
-Each environment has isolated state via partial backend configuration:
+Terraform state is stored remotely in S3 via partial backend configuration:
 - Common backend settings in `backend.tf`
-- Environment-specific state key in `environments/{env}/backend.hcl`
+- Deployment-specific settings in `backend.hcl`
 
 ```hcl
 # backend.tf
@@ -225,16 +215,10 @@ terraform {
   }
 }
 
-# environments/dev/backend.hcl
+# backend.hcl
 bucket = "terraform-state-<ACCOUNT_ID>"
 region = "us-east-1"
-key    = "dev/terraform.tfstate"
-```
-
-**Switch environments**:
-```bash
-terraform init -reconfigure -backend-config=environments/prod/backend.hcl
-terraform plan -var-file=environments/prod/terraform.tfvars
+key    = "terraform.tfstate"
 ```
 
 ### Implemented Modules
@@ -263,8 +247,8 @@ terraform fmt -recursive
 # Validate configuration
 terraform validate
 
-# Plan with specific environment
-terraform plan -var-file=environments/dev/terraform.tfvars
+# Plan with configuration
+terraform plan -var-file=terraform.tfvars
 
 # Security scan (optional - requires checkov)
 checkov -d .
@@ -280,7 +264,7 @@ When adding or modifying modules:
 1. Update the module's `iam-policy.json`
 2. Run policy generation script:
    ```bash
-   ./tooling/create_iam_policies.sh
+   ./tooling/create_iam_policies.sh $user
    ```
 3. Script will create/update IAM policy versions automatically
 4. Policies are versioned (max 5 versions per policy)
@@ -291,76 +275,10 @@ See module READMEs and [AGENTS.md](AGENTS.md) for detailed IAM workflows.
 
 1. Create feature branch from `main`
 2. Run `terraform fmt -recursive` and `terraform validate`
-3. Test changes in `dev` environment
-4. Generate plan for review: `terraform plan -var-file=environments/dev/terraform.tfvars -out=plan.out`
+3. Test changes thoroughly
+4. Generate plan for review: `terraform plan -var-file=terraform.tfvars -out=plan.out`
 5. Submit PR with plan output
 6. Apply only after approval
-
-## Configuration Examples
-
-### Development: Direct Container Access
-
-```hcl
-# environments/dev/terraform.tfvars
-enable_alb = false  # No load balancer
-
-ecs_services = {
-  api = {
-    container_name  = "api"
-    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-api"
-    container_port  = 3000
-    # assign_public_ip = true (auto)
-    # use_private_subnets = false (auto)
-  }
-}
-```
-
-Services deployed to public subnets with public IPs for direct access.
-
-### Production: ALB with Multiple Services
-
-```hcl
-# environments/prod/terraform.tfvars
-enable_alb              = true
-alb_deletion_protection = true
-
-ecs_services = {
-  api = {
-    container_name  = "api"
-    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-api"
-    container_port  = 3000
-    desired_count   = 3
-    task_cpu        = "512"
-    task_memory     = "1024"
-    # assign_public_ip = false (auto)
-    # use_private_subnets = true (auto)
-  }
-  
-  worker = {
-    container_name  = "worker"
-    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-worker"
-    container_port  = 8080
-    desired_count   = 2
-  }
-}
-
-alb_routes = {
-  api = {
-    path_pattern      = "/api/*"
-    priority          = 100
-    health_check_path = "/health"
-  }
-  
-  worker = {
-    host_header       = "worker.example.com"
-    path_pattern      = "/*"
-    priority          = 200
-    health_check_path = "/healthz"
-  }
-}
-```
-
-Services deployed to private subnets, traffic routed through ALB.
 
 ## Best Practices
 
@@ -385,14 +303,6 @@ Services deployed to private subnets, traffic routed through ALB.
 - Consolidate multiple apps behind single ALB
 - Set appropriate `desired_count` per environment (1 for dev, 2+ for prod)
 
-### Operational
-
-- Always run from project root with `-var-file` and `-backend-config` flags
-- Use `terraform plan` before `apply` to review changes
-- Version IAM policies incrementally (script handles this automatically)
-- Keep module READMEs updated when changing resources
-- Test infrastructure changes in `dev` before deploying to `prod`
-
 ## Documentation
 
 - **[AGENTS.md](AGENTS.md)** - AI agent guidelines, module patterns, IAM workflows
@@ -401,51 +311,9 @@ Services deployed to private subnets, traffic routed through ALB.
   - [iam/](modules/iam/README.md) - ECS task execution and task roles
   - [ecs/](modules/ecs/README.md) - Fargate cluster and services
   - [alb/](modules/alb/README.md) - Application Load Balancer
+  - [acm/](modules/acm/README.md) - SSL/TLS certificates
+  - [waf/](modules/waf/README.md) - Web Application Firewall
   - [s3/](modules/s3/README.md) - Backend state IAM policy
-- **Environment READMEs**:
-  - [environments/dev/](environments/dev/README.md)
-  - [environments/prod/](environments/prod/README.md)
-
-## Troubleshooting
-
-### Backend Initialization Fails
-
-```bash
-# Ensure bucket exists and you have access
-aws s3 ls s3://terraform-state-<ACCOUNT_ID>-<REGION>
-
-# Check backend.hcl has correct bucket name and region
-cat environments/dev/backend.hcl
-
-# Re-initialize with -reconfigure flag
-terraform init -reconfigure -backend-config=environments/dev/backend.hcl
-```
-
-### IAM Permission Errors
-
-```bash
-# Generate and apply latest policies
-./tooling/create_iam_policies.sh
-
-# Verify your IAM principal has the policies attached
-aws iam list-attached-user-policies --user-name <your-username>
-# or
-aws iam list-attached-role-policies --role-name <your-role>
-```
-
-### ECS Tasks Not Starting
-
-- Check CloudWatch Logs: `/ecs/${project_name}-${environment}/${service_name}`
-- Verify ECR repository ARNs in `terraform.tfvars`
-- Ensure task role has ECR pull permissions
-- Check container image exists and is accessible
-
-### ALB Health Checks Failing
-
-- Verify `health_check_path` is correct for your application
-- Check security group allows ALB → ECS communication
-- Ensure container port matches service definition
-- Review `health_check_matcher` (default: 200-299)
 
 ## License
 

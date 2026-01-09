@@ -13,10 +13,8 @@ This module creates two separate IAM roles required by ECS Fargate:
 
 ### Task Execution Role
 Configured with permissions to:
-- Pull images from environment-specific ECR repositories (scoped via repository ARNs)
-- Create and write to CloudWatch log groups matching `/ecs/${project_name}-${environment}`
-
-Permissions are scoped to enforce environment isolation - dev tasks cannot access prod ECR repositories or prod log groups.
+- Pull images from ECR repositories (scoped via repository ARNs)
+- Create and write to CloudWatch log groups matching `/ecs/${project_name}`
 
 ### Task Role
 The task role is empty by default, following the principle of least privilege. Application permissions are added as needed using a single consolidated policy pattern.
@@ -26,10 +24,10 @@ A commented example in `main.tf` demonstrates the pattern for adding application
 ## Security Design
 
 ### Resource Scoping
-All permissions use environment-scoped resource ARNs:
+All permissions use scoped resource ARNs:
 - ECR: Exact repository ARNs passed via `ecr_repository_arns` variable
-- CloudWatch Logs: Exact log group pattern `/ecs/${project_name}-${environment}` with `:*` suffix for streams
-- Application resources: Template uses `${var.project_name}-${var.environment}-*` naming pattern
+- CloudWatch Logs: Exact log group pattern `/ecs/${project_name}` with `:*` suffix for streams
+- Application resources: Template uses `${var.project_name}-*` naming pattern
 
 ### Policy Pattern
 Uses single consolidated policy approach:
@@ -42,7 +40,6 @@ Uses single consolidated policy approach:
 | Name | Description | Type |
 |------|-------------|------|
 | `project_name` | Project name (kebab-case) | `string` |
-| `environment` | Environment (dev/prod) | `string` |
 | `ecr_repository_arns` | ECR repository ARNs for image pulls | `list(string)` |
 
 ## Module Outputs
@@ -61,7 +58,6 @@ module "iam" {
   source = "./modules/iam"
 
   project_name         = var.project_name
-  environment          = var.environment
   ecr_repository_arns  = [module.ecr.repository_arn]
 }
 ```
@@ -79,7 +75,5 @@ Total of 19 IAM actions across 3 resource types (roles, policies, policy attachm
 ## CloudWatch Logs Permission Details
 
 The task execution role can write to log groups matching:
-- Exact pattern: `/ecs/${project_name}-${environment}`
+- Exact pattern: `/ecs/${project_name}`
 - All log streams within that group (`:*` suffix)
-
-This scoping ensures environment isolation - dev tasks cannot write to prod logs.

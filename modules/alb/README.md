@@ -25,7 +25,6 @@ module "alb" {
   source = "./modules/alb"
 
   project_name       = "myapp"
-  environment        = "dev"
   vpc_id             = module.network.vpc_id
   public_subnet_ids  = module.network.public_subnet_ids
 
@@ -162,7 +161,6 @@ Your IAM user or role needs permissions to manage ELB resources. The required pe
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `project_name` | string | yes | - | Project name (kebab-case) |
-| `environment` | string | yes | - | Environment (dev/prod) |
 | `vpc_id` | string | yes | - | VPC ID |
 | `public_subnet_ids` | list(string) | yes | - | Public subnet IDs (min 2) |
 | `enable_deletion_protection` | bool | no | false | Enable deletion protection |

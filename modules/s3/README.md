@@ -38,13 +38,13 @@ This policy should be applied to your IAM user or role that executes Terraform c
 
 ## Backend Configuration
 
-The S3 backend is configured in the root `backend.tf` with environment-specific settings in `environments/{env}/backend.hcl`:
+The S3 backend is configured in the root `backend.tf` with deployment-specific settings in `backend.hcl`:
 
 ```hcl
-# environments/dev/backend.hcl
+# backend.hcl
 bucket = "terraform-state-<ACCOUNT_ID>-<REGION>"
 region = "us-east-1"
-key    = "dev/terraform.tfstate"
+key    = "terraform.tfstate"
 ```
 
 ## Prerequisites

@@ -16,18 +16,18 @@ terraform {
 ##################################################
 
 resource "aws_lb" "main" {
-  name               = "${var.project_name}-${var.environment}-alb"
+  name               = "${var.project_name}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
   subnets            = var.public_subnet_ids
 
-  enable_deletion_protection       = var.enable_deletion_protection
+  enable_deletion_protection       = false
   enable_http2                     = true
   enable_cross_zone_load_balancing = true
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-alb"
+    Name = "${var.project_name}-alb"
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_lb" "main" {
 resource "aws_lb_target_group" "service" {
   for_each = var.services
 
-  name        = "${var.project_name}-${var.environment}-${each.key}-tg"
+  name        = "${var.project_name}-${each.key}-tg"
   port        = each.value.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -60,7 +60,7 @@ resource "aws_lb_target_group" "service" {
   deregistration_delay = each.value.deregistration_delay
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-tg"
+    Name    = "${var.project_name}-${each.key}-tg"
     Service = each.key
   }
 
@@ -70,15 +70,20 @@ resource "aws_lb_target_group" "service" {
 }
 
 ##################################################
-# ALB Listener (HTTP)
+# ALB Listeners
 ##################################################
 
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
-  port              = 80
-  protocol          = "HTTP"
+# HTTPS Listener (primary, if certificate provided)
+resource "aws_lb_listener" "https" {
+  count = 1
 
-  # Default action - can be customized per deployment
+  load_balancer_arn = aws_lb.main.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.certificate_arn
+
+  # Default action
   default_action {
     type = "fixed-response"
     fixed_response {
@@ -89,7 +94,29 @@ resource "aws_lb_listener" "http" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-http-listener"
+    Name = "${var.project_name}-https-listener"
+  }
+}
+
+# HTTP Listener - Redirect to HTTPS (when certificate exists)
+resource "aws_lb_listener" "http_redirect" {
+  count = 1
+
+  load_balancer_arn = aws_lb.main.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+
+  tags = {
+    Name = "${var.project_name}-http-redirect-listener"
   }
 }
 
@@ -100,7 +127,8 @@ resource "aws_lb_listener" "http" {
 resource "aws_lb_listener_rule" "service" {
   for_each = var.services
 
-  listener_arn = aws_lb_listener.http.arn
+  # Use HTTPS listener if certificate provided, otherwise HTTP direct listener
+  listener_arn = aws_lb_listener.https[0].arn
   priority     = each.value.listener_rule_priority
 
   action {
@@ -128,7 +156,7 @@ resource "aws_lb_listener_rule" "service" {
   }
 
   tags = {
-    Name    = "${var.project_name}-${var.environment}-${each.key}-rule"
+    Name    = "${var.project_name}-${each.key}-rule"
     Service = each.key
   }
 }

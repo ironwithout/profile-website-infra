@@ -5,7 +5,6 @@ module "network" {
   source = "./modules/network"
 
   project_name       = var.project_name
-  environment        = var.environment
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
 }
@@ -14,20 +13,24 @@ module "iam" {
   source = "./modules/iam"
 
   project_name        = var.project_name
-  environment         = var.environment
   ecr_repository_arns = var.ecr_repository_arns
 }
 
+module "acm" {
+  source = "./modules/acm"
+
+  project_name = var.project_name
+  domain_name  = var.domain_name
+}
+
 module "alb" {
-  count  = var.enable_alb ? 1 : 0
   source = "./modules/alb"
 
-  project_name               = var.project_name
-  environment                = var.environment
-  vpc_id                     = module.network.vpc_id
-  alb_security_group_id      = module.network.alb_security_group_id
-  public_subnet_ids          = module.network.public_subnet_ids
-  enable_deletion_protection = var.alb_deletion_protection
+  project_name          = var.project_name
+  vpc_id                = module.network.vpc_id
+  alb_security_group_id = module.network.alb_security_group_id
+  public_subnet_ids     = module.network.public_subnet_ids
+  certificate_arn       = module.acm.certificate_arn
 
   services = {
     for name, route_config in var.alb_routes : name => {
@@ -46,18 +49,22 @@ module "alb" {
   }
 }
 
+module "waf" {
+  source = "./modules/waf"
+
+  project_name = var.project_name
+  alb_arn      = module.alb.alb_arn
+}
+
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name              = var.project_name
-  environment               = var.environment
-  enable_container_insights = var.enable_container_insights
-  public_subnet_ids         = module.network.public_subnet_ids
-  private_subnet_ids        = module.network.private_subnet_ids
-  ecs_security_group_id     = module.network.ecs_security_group_id
-  task_execution_role_arn   = module.iam.task_execution_role_arn
-  task_role_arn             = module.iam.task_role_arn
-  aws_region                = data.aws_region.current.name
+  project_name            = var.project_name
+  subnet_ids              = module.network.public_subnet_ids
+  ecs_security_group_id   = module.network.ecs_security_group_id
+  task_execution_role_arn = module.iam.task_execution_role_arn
+  task_role_arn           = module.iam.task_role_arn
+  aws_region              = data.aws_region.current.name
 
   # Pass simplified services with computed defaults
   services = {
@@ -74,21 +81,8 @@ module "ecs" {
       environment_variables     = config.environment_variables
       health_check_command      = config.health_check_command
       health_check_grace_period = config.health_check_grace_period
-      enable_execute_command    = config.enable_execute_command
-
-      # Auto-determine subnet placement: private if ALB enabled, public otherwise
-      use_private_subnets = coalesce(
-        config.use_private_subnets,
-        var.enable_alb
-      )
-
-      # Auto-determine public IP: true for public subnets, false for private
-      assign_public_ip = coalesce(
-        config.assign_public_ip,
-        !var.enable_alb
-      )
     }
   }
 
-  alb_target_group_arns = var.enable_alb ? module.alb[0].target_group_arns : {}
+  alb_target_group_arns = module.alb.target_group_arns
 }

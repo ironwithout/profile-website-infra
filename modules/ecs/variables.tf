@@ -10,34 +10,9 @@ variable "project_name" {
   }
 }
 
-variable "environment" {
-  description = "Environment name (dev, prod)"
-  type        = string
-
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be dev or prod."
-  }
-}
-
-variable "enable_container_insights" {
-  description = "Enable container insights"
-  type        = string
-
-  validation {
-    condition     = contains(["enabled", "disabled"], var.enable_container_insights)
-    error_message = "Container insights must be enabled or disabled."
-  }
-}
-
 # Network Configuration
-variable "public_subnet_ids" {
-  description = "List of public subnet IDs"
-  type        = list(string)
-}
-
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs"
+variable "subnet_ids" {
+  description = "List of subnet IDs"
   type        = list(string)
 }
 
@@ -75,13 +50,10 @@ variable "services" {
     task_memory               = string
     desired_count             = number
     launch_type               = string
-    assign_public_ip          = bool
-    use_private_subnets       = bool
     log_retention_days        = number
     environment_variables     = map(string)
     health_check_command      = optional(list(string))
     health_check_grace_period = number
-    enable_execute_command    = bool
   }))
 }
 
@@ -89,5 +61,4 @@ variable "services" {
 variable "alb_target_group_arns" {
   description = "Map of service names to ALB target group ARNs (empty if ALB not enabled)"
   type        = map(string)
-  default     = {}
 }

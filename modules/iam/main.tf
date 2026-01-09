@@ -12,7 +12,7 @@ terraform {
 }
 
 resource "aws_iam_role" "task_execution" {
-  name = "${var.project_name}-${var.environment}-ecs-task-execution"
+  name = "${var.project_name}-ecs-task-execution"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -26,7 +26,7 @@ resource "aws_iam_role" "task_execution" {
   })
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task-execution"
+    Name = "${var.project_name}-ecs-task-execution"
   }
 }
 
@@ -54,12 +54,12 @@ data "aws_iam_policy_document" "task_execution_ecr" {
 }
 
 resource "aws_iam_policy" "task_execution_ecr" {
-  name        = "${var.project_name}-${var.environment}-ecs-task-execution-ecr"
+  name        = "${var.project_name}-ecs-task-execution-ecr"
   description = "Allow ECS task execution to pull images from specific ECR repositories"
   policy      = data.aws_iam_policy_document.task_execution_ecr.json
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task-execution-ecr"
+    Name = "${var.project_name}-ecs-task-execution-ecr"
   }
 }
 
@@ -77,19 +77,19 @@ data "aws_iam_policy_document" "task_execution_logs" {
       "logs:PutLogEvents"
     ]
     resources = [
-      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}-${var.environment}/*",
-      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}-${var.environment}/*:*"
+      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}/*",
+      "arn:aws:logs:*:*:log-group:/ecs/${var.project_name}/*:*"
     ]
   }
 }
 
 resource "aws_iam_policy" "task_execution_logs" {
-  name        = "${var.project_name}-${var.environment}-ecs-task-execution-logs"
+  name        = "${var.project_name}-ecs-task-execution-logs"
   description = "Allow ECS task execution to write logs to CloudWatch"
   policy      = data.aws_iam_policy_document.task_execution_logs.json
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task-execution-logs"
+    Name = "${var.project_name}-ecs-task-execution-logs"
   }
 }
 
@@ -99,7 +99,7 @@ resource "aws_iam_role_policy_attachment" "task_execution_logs" {
 }
 
 resource "aws_iam_role" "task" {
-  name = "${var.project_name}-${var.environment}-ecs-task"
+  name = "${var.project_name}-ecs-task"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -113,6 +113,6 @@ resource "aws_iam_role" "task" {
   })
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task"
+    Name = "${var.project_name}-ecs-task"
   }
 }

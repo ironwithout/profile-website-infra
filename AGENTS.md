@@ -1,6 +1,6 @@
 # AWS ECS Fargate Infrastructure
 
-Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orchestrates reusable modules: `network`, `iam`, and `ecs`. Each environment has isolated S3 state via partial backend config.
+Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orchestrates reusable modules: `network`, `iam`, `ecs`, `alb`, `acm`, and `waf`.
 
 ## Architecture Principles
 
@@ -10,11 +10,10 @@ Modular Terraform for deploying containerized apps on AWS ECS Fargate. Root orch
 
 ## Naming & Tagging
 
-**Naming**: `${project_name}-${environment}-<resource-type>` (e.g., `myapp-dev-vpc`)
+**Naming**: `${project_name}-<resource-type>` (e.g., `myapp-vpc`)
 - `project_name`: kebab-case only (validated)
-- `environment`: `dev|prod` (validated)
 
-**Tags**: Auto-applied via `versions.tf` `default_tags` - never add `Project`, `Environment`, or `ManagedBy` tags manually.
+**Tags**: Auto-applied via `versions.tf` `default_tags` - never add `Project` or `ManagedBy` tags manually.
 
 ## Module Pattern
 
@@ -35,10 +34,10 @@ cidr_blocks = ["10.0.0.0/16"]
 ```
 See `modules/network/main.tf` resource `aws_security_group_rule.alb_to_ecs`.
 
-## Environment Workflow
+## Deployment Workflow
 
-### State Isolation
-Backend configuration is in `backend.tf`, environment-specific settings in `environments/{env}/backend.hcl`:
+### State Management
+Backend configuration is in `backend.tf`, deployment settings in `backend.hcl`:
 ```hcl
 # backend.tf
 backend "s3" {
@@ -46,20 +45,20 @@ backend "s3" {
   use_lockfile = true
 }
 
-# environments/dev/backend.hcl
+# backend.hcl
 bucket = "terraform-state-<ACCOUNT_ID>"
 region = "us-east-1"
-key    = "dev/terraform.tfstate"
+key    = "terraform.tfstate"
 ```
 
 ### Commands
 ```bash
-terraform init -backend-config=environments/dev/backend.hcl
-terraform plan -var-file=environments/dev/terraform.tfvars
-terraform apply -var-file=environments/dev/terraform.tfvars
+terraform init -backend-config=backend.hcl
+terraform plan -var-file=terraform.tfvars
+terraform apply -var-file=terraform.tfvars
 ```
 
-Always run from root with both flags. Switch environments: `terraform init -reconfigure -backend-config=environments/prod/backend.hcl`
+Always run from root with both flags.
 
 ## IAM Policy Management
 
