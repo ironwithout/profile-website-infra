@@ -13,16 +13,19 @@ variable "project_name" {
 variable "vpc_id" {
   description = "VPC ID where ALB will be created"
   type        = string
+  sensitive   = true
 }
 
 variable "alb_security_group_id" {
   description = "Security group ID for ALB (managed by network module)"
   type        = string
+  sensitive   = true
 }
 
 variable "public_subnet_ids" {
   description = "List of public subnet IDs for ALB"
   type        = list(string)
+  sensitive   = true
 
   validation {
     condition     = length(var.public_subnet_ids) >= 2
@@ -33,7 +36,7 @@ variable "public_subnet_ids" {
 variable "certificate_arn" {
   description = "ARN of ACM certificate for HTTPS listener (optional - if not provided, only HTTP listener is created)"
   type        = string
-  default     = null
+  sensitive   = true
 }
 
 variable "services" {

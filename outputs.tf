@@ -47,6 +47,7 @@ output "alb_dns_name" {
 output "alb_zone_id" {
   description = "Zone ID of the ALB for Route53"
   value       = module.alb.alb_zone_id
+  sensitive   = true
 }
 
 # ACM outputs (conditional)

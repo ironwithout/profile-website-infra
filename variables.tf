@@ -1,9 +1,3 @@
-variable "aws_account_id" {
-  description = "AWS account id"
-  type        = string
-  sensitive   = true
-}
-
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string

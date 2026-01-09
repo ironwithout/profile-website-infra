@@ -35,6 +35,7 @@ jobs:
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
+        id: aws-creds
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
@@ -51,6 +52,11 @@ jobs:
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan -no-color | sed 's/${{ steps.aws-creds.outputs.aws-account-id }}/[REDACTED]/g'
+        continue-on-error: true
 
       - name: TFLint Setup
         uses: terraform-linters/setup-tflint@v4

@@ -3,6 +3,7 @@
 output "alb_id" {
   description = "ID of the Application Load Balancer"
   value       = aws_lb.main.id
+  sensitive   = true
 }
 
 output "alb_arn" {
@@ -19,6 +20,7 @@ output "alb_dns_name" {
 output "alb_zone_id" {
   description = "Zone ID of the Application Load Balancer (for Route53)"
   value       = aws_lb.main.zone_id
+  sensitive   = true
 }
 
 output "target_group_arns" {

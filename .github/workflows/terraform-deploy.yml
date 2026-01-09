@@ -48,9 +48,6 @@ jobs:
         id: plan
         run: terraform plan -out=tfplan -no-color | sed 's/${{ steps.aws-creds.outputs.aws-account-id }}/[REDACTED]/g'
         continue-on-error: true
-        env:
-          TF_VAR_ecr_repository_arns: ${{ secrets.ECR_REPOSITORY_ARNS }}
-          TF_VAR_ecs_service_images: ${{ secrets.ECS_SERVICE_IMAGES }}
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
