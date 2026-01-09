@@ -70,12 +70,12 @@ variable "ecs_services" {
   description = "Map of ECS service configurations (minimal required fields, rest use sensible defaults)"
   type = map(object({
     # Required fields
-    container_name  = string
-    container_image = string
-    container_port  = number
+    container_name      = string
+    container_image     = string
+    container_image_tag = string
+    container_port      = number
 
     # Optional with defaults
-    container_image_tag       = optional(string, "latest")
     task_cpu                  = optional(string, "256")
     task_memory               = optional(string, "512")
     desired_count             = optional(number, 1)
@@ -95,7 +95,6 @@ variable "ecs_services" {
 variable "enable_alb" {
   description = "Enable Application Load Balancer"
   type        = bool
-  default     = false
 }
 
 variable "alb_deletion_protection" {
@@ -120,9 +119,4 @@ variable "alb_routes" {
     deregistration_delay  = optional(number, 30)
   }))
   default = {}
-
-  validation {
-    condition     = var.enable_alb && length(var.alb_routes) > 0
-    error_message = "When ALB is enabled, alb_routes must be configured for at least one service."
-  }
 }
