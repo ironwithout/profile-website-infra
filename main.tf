@@ -64,7 +64,7 @@ module "ecs" {
   ecs_security_group_id   = module.network.ecs_security_group_id
   task_execution_role_arn = module.iam.task_execution_role_arn
   task_role_arn           = module.iam.task_role_arn
-  aws_region              = data.aws_region.current.name
+  aws_region              = var.aws_region
 
   # Pass simplified services with computed defaults
   services = {

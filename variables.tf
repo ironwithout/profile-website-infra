@@ -1,16 +1,7 @@
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
-}
-
-variable "aws_account_id" {
-  description = "AWS account ID for validation (prevents deploying to wrong account)"
-  type        = string
-
-  validation {
-    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
-    error_message = "AWS account ID must be exactly 12 digits."
-  }
+  default     = "us-east-1"
 }
 
 variable "project_name" {
@@ -69,6 +60,7 @@ variable "ecs_services" {
 variable "domain_name" {
   description = "Primary domain name for SSL certificate (e.g., example.com). Leave empty to disable HTTPS."
   type        = string
+  default     = "msdeleyto.es"
 }
 
 # ALB routing configuration (only used when enable_alb = true)

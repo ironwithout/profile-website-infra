@@ -1,6 +1,3 @@
-aws_account_id = "123456789012"
-aws_region     = "us-east-1"
-
 # ECR Repository Configuration
 ecr_repository_arns = [
   "arn:aws:ecr:us-east-1:123456789012:repository/profile-api",
@@ -49,8 +46,6 @@ ecs_services = {
     }
   }
 }
-
-domain_name = "example.com"
 
 # ALB Routing - Separate from service definitions
 alb_routes = {
