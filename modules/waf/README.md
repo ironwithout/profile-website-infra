@@ -23,7 +23,6 @@ module "waf" {
   source = "./modules/waf"
 
   project_name    = var.project_name
-  environment     = var.environment
   alb_arn         = module.alb[0].alb_arn
 
   # Optional: Rate limiting
@@ -87,6 +86,6 @@ Navigate to: **CloudWatch → Metrics → WAFV2**
 ## Important Notes
 
 - **False Positives**: Managed rules may occasionally block legitimate traffic
-- **Testing**: Test in dev environment first
+- **Testing**: Test with real traffic patterns before enabling all rules
 - **Tuning**: Monitor CloudWatch metrics and adjust rules if needed
 - **Regional**: WAF must be in same region as ALB

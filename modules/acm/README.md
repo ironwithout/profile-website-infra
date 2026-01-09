@@ -20,7 +20,6 @@ module "acm" {
   source = "./modules/acm"
 
   project_name = var.project_name
-  environment  = var.environment
   domain_name  = "example.com"
   include_www  = true  # Adds www.example.com
 }

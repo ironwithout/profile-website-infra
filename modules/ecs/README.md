@@ -11,7 +11,7 @@ This module creates the ECS infrastructure including cluster, task definition wi
 - **ECS Cluster**: Fargate cluster with optional Container Insights
 - **Task Definition**: Defines container image, resources (CPU/memory), IAM roles, and logging
 - **ECS Service**: Manages task instances with configurable desired count and deployment settings
-- **CloudWatch Logs**: Log group matching pattern `/ecs/${project_name}-${environment}`
+- **CloudWatch Logs**: Log group matching pattern `/ecs/${project_name}`
 - **Health Checks**: Configurable container health checks
 - **Deployment**: Circuit breaker and rollback enabled by default
 
@@ -42,7 +42,6 @@ Tasks run in awsvpc network mode with:
 | Name | Description | Type |
 |------|-------------|------|
 | `project_name` | Project name (kebab-case) | `string` |
-| `environment` | Environment (dev/prod) | `string` |
 | `subnet_ids` | Subnet IDs for ECS tasks | `list(string)` |
 | `ecs_security_group_id` | Security group ID for ECS tasks | `string` |
 | `task_execution_role_arn` | Task execution role ARN | `string` |
@@ -77,7 +76,6 @@ module "ecs" {
   source = "./modules/ecs"
 
   project_name             = var.project_name
-  environment              = var.environment
   
   subnet_ids               = module.network.public_subnet_ids
   ecs_security_group_id    = module.network.ecs_security_group_id
@@ -118,14 +116,14 @@ Default health check:
 - Retries: 3
 - Start period: 60 seconds
 
-## Environment-Specific Configuration
+## Configuration Recommendations
 
-### Development
-- `launch_type`: FARGATE_SPOT (cost savings)
-- `desired_count`: 1
-- `task_cpu`: "256"
-- `task_memory`: "512"
-- `log_retention_days`: 7
+### Cost Optimization
+- `launch_type`: FARGATE_SPOT (up to 70% savings)
+- `desired_count`: Start with 1, scale as needed
+- `task_cpu`: "256" (smallest size)
+- `task_memory`: "512" (smallest size)
+- `log_retention_days`: 3-7 days
 - `enable_container_insights`: false
 
 ### Production

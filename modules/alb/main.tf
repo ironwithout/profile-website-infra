@@ -22,7 +22,7 @@ resource "aws_lb" "main" {
   security_groups    = [var.alb_security_group_id]
   subnets            = var.public_subnet_ids
 
-  enable_deletion_protection       = var.enable_deletion_protection
+  enable_deletion_protection       = false
   enable_http2                     = true
   enable_cross_zone_load_balancing = true
 

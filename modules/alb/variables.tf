@@ -30,12 +30,6 @@ variable "public_subnet_ids" {
   }
 }
 
-variable "enable_deletion_protection" {
-  description = "Enable deletion protection for ALB"
-  type        = bool
-  default     = false
-}
-
 variable "certificate_arn" {
   description = "ARN of ACM certificate for HTTPS listener (optional - if not provided, only HTTP listener is created)"
   type        = string

@@ -17,12 +17,10 @@ module "iam" {
 }
 
 module "acm" {
-  count  = var.enable_alb && var.domain_name != "" ? 1 : 0
   source = "./modules/acm"
 
   project_name = var.project_name
   domain_name  = var.domain_name
-  include_www  = var.include_www_subdomain
 }
 
 module "alb" {
@@ -32,7 +30,6 @@ module "alb" {
   vpc_id                     = module.network.vpc_id
   alb_security_group_id      = module.network.alb_security_group_id
   public_subnet_ids          = module.network.public_subnet_ids
-  enable_deletion_protection = var.alb_deletion_protection
 
   # Pass certificate ARN if ACM module is enabled
   certificate_arn = var.domain_name != "" ? module.acm[0].certificate_arn : null
@@ -69,7 +66,6 @@ module "ecs" {
   source = "./modules/ecs"
 
   project_name              = var.project_name
-  enable_container_insights = var.enable_container_insights
   public_subnet_ids         = module.network.public_subnet_ids
   private_subnet_ids        = module.network.private_subnet_ids
   ecs_security_group_id     = module.network.ecs_security_group_id
@@ -94,17 +90,8 @@ module "ecs" {
       health_check_grace_period = config.health_check_grace_period
       enable_execute_command    = config.enable_execute_command
 
-      # Auto-determine subnet placement: private if ALB enabled, public otherwise
-      use_private_subnets = coalesce(
-        config.use_private_subnets,
-        var.enable_alb
-      )
-
-      # Auto-determine public IP: true for public subnets, false for private
-      assign_public_ip = coalesce(
-        config.assign_public_ip,
-        !var.enable_alb
-      )
+      use_private_subnets = config.use_private_subnets
+      assign_public_ip = config.assign_public_ip
     }
   }
 

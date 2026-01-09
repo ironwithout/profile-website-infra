@@ -10,16 +10,6 @@ variable "project_name" {
   }
 }
 
-variable "enable_container_insights" {
-  description = "Enable container insights"
-  type        = string
-
-  validation {
-    condition     = contains(["enabled", "disabled"], var.enable_container_insights)
-    error_message = "Container insights must be enabled or disabled."
-  }
-}
-
 # Network Configuration
 variable "public_subnet_ids" {
   description = "List of public subnet IDs"
@@ -79,5 +69,4 @@ variable "services" {
 variable "alb_target_group_arns" {
   description = "Map of service names to ALB target group ARNs (empty if ALB not enabled)"
   type        = map(string)
-  default     = {}
 }

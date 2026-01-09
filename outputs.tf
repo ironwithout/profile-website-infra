@@ -41,42 +41,42 @@ output "ecs_service_names" {
 # ALB outputs (conditional)
 output "alb_dns_name" {
   description = "DNS name of the Application Load Balancer (use this to access services)"
-  value       = var.enable_alb ? module.alb[0].alb_dns_name : null
+  value       = module.alb[0].alb_dns_name
 }
 
 output "alb_zone_id" {
   description = "Zone ID of the ALB for Route53"
-  value       = var.enable_alb ? module.alb[0].alb_zone_id : null
+  value       = module.alb[0].alb_zone_id
 }
 
 # ACM outputs (conditional)
 output "acm_certificate_arn" {
   description = "ARN of the ACM certificate"
-  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].certificate_arn : null
+  value       = module.acm[0].certificate_arn
 }
 
 output "acm_certificate_status" {
   description = "Status of the ACM certificate"
-  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].certificate_status : null
+  value       = module.acm[0].certificate_status
 }
 
 output "acm_validation_records" {
-  description = "DNS validation records to add in Cloudflare (IMPORTANT: Add these to validate certificate)"
-  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].domain_validation_options : []
+  description = "DNS validation records to add in registar"
+  value       = module.acm[0].domain_validation_options
 }
 
 output "acm_validation_instructions" {
   description = "Instructions for validating certificate in Cloudflare"
-  value       = var.enable_alb && var.domain_name != "" ? module.acm[0].validation_instructions : ""
+  value       = module.acm[0].validation_instructions
 }
 
 # WAF outputs (conditional)
 output "waf_web_acl_arn" {
   description = "ARN of the WAF Web ACL"
-  value       = var.enable_alb && var.enable_waf ? module.waf[0].web_acl_arn : null
+  value       = module.waf[0].web_acl_arn
 }
 
 output "waf_web_acl_name" {
   description = "Name of the WAF Web ACL"
-  value       = var.enable_alb && var.enable_waf ? module.waf[0].web_acl_name : null
+  value       = module.waf[0].web_acl_name
 }

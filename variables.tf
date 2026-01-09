@@ -43,18 +43,6 @@ variable "ecr_repository_arns" {
   type        = list(string)
 }
 
-# ECS Cluster Configuration
-variable "enable_container_insights" {
-  description = "Enable container insights for ECS cluster"
-  type        = string
-  default     = "disabled"
-
-  validation {
-    condition     = contains(["enabled", "disabled"], var.enable_container_insights)
-    error_message = "Container insights must be enabled or disabled."
-  }
-}
-
 # ECS Services - Simplified with sensible defaults
 variable "ecs_services" {
   description = "Map of ECS service configurations (minimal required fields, rest use sensible defaults)"
@@ -78,40 +66,12 @@ variable "ecs_services" {
     health_check_grace_period = optional(number, 60)
     enable_execute_command    = optional(bool, false)
   }))
-
-  default = {}
-}
-
-# ALB Configuration
-variable "enable_alb" {
-  description = "Enable Application Load Balancer"
-  type        = bool
-}
-
-variable "alb_deletion_protection" {
-  description = "Enable deletion protection for ALB"
-  type        = bool
-  default     = false
 }
 
 # HTTPS/TLS Configuration
 variable "domain_name" {
   description = "Primary domain name for SSL certificate (e.g., example.com). Leave empty to disable HTTPS."
   type        = string
-  default     = ""
-}
-
-variable "include_www_subdomain" {
-  description = "Include www subdomain in SSL certificate"
-  type        = bool
-  default     = true
-}
-
-# WAF Configuration
-variable "enable_waf" {
-  description = "Enable AWS WAF for ALB protection"
-  type        = bool
-  default     = false
 }
 
 variable "waf_rate_limit" {
@@ -141,5 +101,4 @@ variable "alb_routes" {
     unhealthy_threshold   = optional(number, 3)
     deregistration_delay  = optional(number, 30)
   }))
-  default = {}
 }

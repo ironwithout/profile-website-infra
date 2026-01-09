@@ -19,11 +19,11 @@ ecs_services = {
     container_image_tag = "v1.0.0"
     container_port      = 3000
 
-    # Production overrides
+    # Optional overrides
     task_cpu            = "1024"
     task_memory         = "2048"
     desired_count       = 3
-    launch_type         = "FARGATE" # Standard Fargate for production
+    launch_type         = "FARGATE"
     log_retention_days  = 30
 
     environment_variables = {
