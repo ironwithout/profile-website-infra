@@ -16,7 +16,7 @@ terraform {
 ##################################################
 
 resource "aws_lb" "main" {
-  name               = "${var.project_name}-${var.environment}-alb"
+  name               = "${var.project_name}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
@@ -27,7 +27,7 @@ resource "aws_lb" "main" {
   enable_cross_zone_load_balancing = true
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-alb"
+    Name = "${var.project_name}-alb"
   }
 }
 
