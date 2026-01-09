@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "service" {
   container_definitions = jsonencode([
     {
       name      = each.value.container_name
-      image     = each.value.container_image
+      image     = "${each.value.container_image}:${each.value.container_image_tag}"
       essential = true
 
       portMappings = [
@@ -117,6 +117,8 @@ resource "aws_ecs_service" "service" {
     enable   = true
     rollback = true
   }
+
+  enable_execute_command = each.value.enable_execute_command
 
   health_check_grace_period_seconds = lookup(var.alb_target_group_arns, each.key, null) != null ? each.value.health_check_grace_period : null
 

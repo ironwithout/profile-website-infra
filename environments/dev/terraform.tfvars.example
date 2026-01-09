@@ -33,6 +33,9 @@ ecs_services = {
 
     # Container health check (optional)
     health_check_command = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+
+    # Enable ECS Exec for debugging
+    enable_execute_command = true
   }
 
   # Additional service example with minimal config

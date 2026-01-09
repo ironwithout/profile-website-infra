@@ -81,6 +81,7 @@ variable "services" {
     environment_variables     = map(string)
     health_check_command      = optional(list(string))
     health_check_grace_period = number
+    enable_execute_command    = bool
   }))
 }
 

@@ -86,6 +86,7 @@ variable "ecs_services" {
     log_retention_days        = optional(number, 7)
     health_check_command      = optional(list(string), null)
     health_check_grace_period = optional(number, 60)
+    enable_execute_command    = optional(bool, false)
   }))
 
   default = {}

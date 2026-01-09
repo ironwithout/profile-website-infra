@@ -74,6 +74,7 @@ module "ecs" {
       environment_variables     = config.environment_variables
       health_check_command      = config.health_check_command
       health_check_grace_period = config.health_check_grace_period
+      enable_execute_command    = config.enable_execute_command
 
       # Auto-determine subnet placement: private if ALB enabled, public otherwise
       use_private_subnets = coalesce(
