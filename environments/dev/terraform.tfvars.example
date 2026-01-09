@@ -15,30 +15,31 @@ ecr_repository_arns = [
 ecs_services = {
   api = {
     # Required
-    container_name  = "api"
-    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-api"
-    container_port  = 3000
-    
+    container_name      = "api"
+    container_image     = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-api"
+    container_image_tag = "v1.0.0"
+    container_port      = 3000
+
     # Optional overrides (showing non-default values)
-    container_image_tag = "dev"
     task_cpu            = "512"
     task_memory         = "1024"
     desired_count       = 2
     log_retention_days  = 3
-    
+
     environment_variables = {
       NODE_ENV  = "development"
       LOG_LEVEL = "debug"
     }
-    
+
     # Container health check (optional)
     health_check_command = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
   }
-  
+
   # Additional service example with minimal config
   worker = {
     container_name  = "worker"
     container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-worker"
+    container_image_tag = "v1.0.0"
     container_port  = 8080
     # All other fields use defaults
   }

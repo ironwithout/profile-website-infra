@@ -17,38 +17,39 @@ enable_container_insights = "enabled"
 ecs_services = {
   api = {
     # Required
-    container_name  = "api"
-    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-api"
-    container_port  = 3000
-    
-    # Production overrides
+    container_name      = "api"
+    container_image     = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-api"
     container_image_tag = "v1.0.0"
+    container_port      = 3000
+
+    # Production overrides
     task_cpu            = "1024"
     task_memory         = "2048"
     desired_count       = 3
     launch_type         = "FARGATE" # Standard Fargate for production
     log_retention_days  = 30
-    
+
     environment_variables = {
       NODE_ENV  = "production"
       LOG_LEVEL = "info"
     }
-    
+
     health_check_command      = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
     health_check_grace_period = 120
   }
-  
+
   worker = {
     container_name  = "worker"
     container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/profile-worker"
+    container_image_tag = "v1.0.0"
     container_port  = 8080
-    
+
     container_image_tag = "v1.0.0"
     task_cpu            = "512"
     task_memory         = "1024"
     desired_count       = 2
     log_retention_days  = 30
-    
+
     environment_variables = {
       NODE_ENV = "production"
     }
@@ -68,7 +69,7 @@ alb_routes = {
     # host_header = "api.example.com"
     # health_check_path = "/health"
   }
-  
+
   worker = {
     path_pattern = "/worker/*"
     priority     = 200
