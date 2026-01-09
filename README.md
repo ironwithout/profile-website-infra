@@ -68,7 +68,7 @@ Create an S3 bucket for Terraform state:
 ```bash
 # Set your values
 export AWS_REGION="us-east-1"
-export BUCKET_NAME="terraform-state-profile-website"
+export BUCKET_NAME="bucket-name"
 
 # Create bucket
 aws s3api create-bucket --bucket "${BUCKET_NAME}" --region "${AWS_REGION}"
