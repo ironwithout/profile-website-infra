@@ -11,13 +11,8 @@ variable "project_name" {
 }
 
 # Network Configuration
-variable "public_subnet_ids" {
-  description = "List of public subnet IDs"
-  type        = list(string)
-}
-
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs"
+variable "subnet_ids" {
+  description = "List of subnet IDs"
   type        = list(string)
 }
 
@@ -55,13 +50,10 @@ variable "services" {
     task_memory               = string
     desired_count             = number
     launch_type               = string
-    assign_public_ip          = bool
-    use_private_subnets       = bool
     log_retention_days        = number
     environment_variables     = map(string)
     health_check_command      = optional(list(string))
     health_check_grace_period = number
-    enable_execute_command    = bool
   }))
 }
 

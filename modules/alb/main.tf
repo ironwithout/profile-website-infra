@@ -75,8 +75,6 @@ resource "aws_lb_target_group" "service" {
 
 # HTTPS Listener (primary, if certificate provided)
 resource "aws_lb_listener" "https" {
-  count = var.certificate_arn != null ? 1 : 0
-
   load_balancer_arn = aws_lb.main.arn
   port              = 443
   protocol          = "HTTPS"
@@ -140,7 +138,7 @@ resource "aws_lb_listener_rule" "service" {
   for_each = var.services
 
   # Use HTTPS listener if certificate provided, otherwise HTTP
-  listener_arn = var.certificate_arn != null ? aws_lb_listener.https[0].arn : aws_lb_listener.http.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = each.value.listener_rule_priority
 
   action {

@@ -59,12 +59,9 @@ variable "ecs_services" {
     desired_count             = optional(number, 1)
     launch_type               = optional(string, "FARGATE")
     environment_variables     = optional(map(string), {})
-    use_private_subnets       = optional(bool, null) # null = auto: private if ALB enabled, public otherwise
-    assign_public_ip          = optional(bool, null) # null = auto: true for public subnets, false for private
     log_retention_days        = optional(number, 7)
     health_check_command      = optional(list(string), null)
     health_check_grace_period = optional(number, 60)
-    enable_execute_command    = optional(bool, false)
   }))
 }
 

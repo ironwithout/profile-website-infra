@@ -105,9 +105,9 @@ resource "aws_ecs_service" "service" {
   launch_type     = each.value.launch_type
 
   network_configuration {
-    subnets          = each.value.use_private_subnets ? var.private_subnet_ids : var.public_subnet_ids
+    subnets          = var.subnet_ids
     security_groups  = [var.ecs_security_group_id]
-    assign_public_ip = each.value.assign_public_ip
+    assign_public_ip = true
   }
 
   deployment_maximum_percent         = 200
@@ -117,8 +117,6 @@ resource "aws_ecs_service" "service" {
     enable   = true
     rollback = true
   }
-
-  enable_execute_command = each.value.enable_execute_command
 
   health_check_grace_period_seconds = lookup(var.alb_target_group_arns, each.key, null) != null ? each.value.health_check_grace_period : null
 

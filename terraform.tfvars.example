@@ -38,7 +38,7 @@ ecs_services = {
     container_image_tag = "v1.0.0"
     container_port  = 8080
 
-    container_image_tag = "v1.0.0"
+    # Optional overrides
     task_cpu            = "512"
     task_memory         = "1024"
     desired_count       = 2

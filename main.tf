@@ -64,8 +64,7 @@ module "ecs" {
   source = "./modules/ecs"
 
   project_name            = var.project_name
-  public_subnet_ids       = module.network.public_subnet_ids
-  private_subnet_ids      = module.network.private_subnet_ids
+  subnet_ids              = module.network.public_subnet_ids
   ecs_security_group_id   = module.network.ecs_security_group_id
   task_execution_role_arn = module.iam.task_execution_role_arn
   task_role_arn           = module.iam.task_role_arn
@@ -86,10 +85,6 @@ module "ecs" {
       environment_variables     = config.environment_variables
       health_check_command      = config.health_check_command
       health_check_grace_period = config.health_check_grace_period
-      enable_execute_command    = config.enable_execute_command
-
-      use_private_subnets = config.use_private_subnets
-      assign_public_ip    = config.assign_public_ip
     }
   }
 
