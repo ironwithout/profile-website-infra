@@ -25,11 +25,13 @@ variable "ecs_security_group_id" {
 variable "task_execution_role_arn" {
   description = "ARN of the task execution role"
   type        = string
+  sensitive   = true
 }
 
 variable "task_role_arn" {
   description = "ARN of the task role"
   type        = string
+  sensitive   = true
 }
 
 # AWS Region
@@ -38,14 +40,18 @@ variable "aws_region" {
   type        = string
 }
 
+variable "service_images" {
+  description = "Map of ECS service images"
+  type        = map(string)
+  sensitive   = true
+}
+
 # Services Configuration - Simplified
 variable "services" {
   description = "Map of ECS service configurations with sensible defaults"
   type = map(object({
     container_name            = string
     container_port            = number
-    container_image           = string
-    container_image_tag       = string
     task_cpu                  = string
     task_memory               = string
     desired_count             = number

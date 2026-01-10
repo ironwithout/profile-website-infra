@@ -47,12 +47,14 @@ output "alb_dns_name" {
 output "alb_zone_id" {
   description = "Zone ID of the ALB for Route53"
   value       = module.alb.alb_zone_id
+  sensitive   = true
 }
 
 # ACM outputs (conditional)
 output "acm_certificate_arn" {
   description = "ARN of the ACM certificate"
   value       = module.acm.certificate_arn
+  sensitive   = true
 }
 
 output "acm_certificate_status" {
@@ -74,6 +76,7 @@ output "acm_validation_instructions" {
 output "waf_web_acl_arn" {
   description = "ARN of the WAF Web ACL"
   value       = module.waf.web_acl_arn
+  sensitive   = true
 }
 
 output "waf_web_acl_name" {

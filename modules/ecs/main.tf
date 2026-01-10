@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "service" {
   container_definitions = jsonencode([
     {
       name      = each.value.container_name
-      image     = "${each.value.container_image}:${each.value.container_image_tag}"
+      image     = var.service_images[each.key]
       essential = true
 
       portMappings = [

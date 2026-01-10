@@ -1,16 +1,7 @@
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
-}
-
-variable "aws_account_id" {
-  description = "AWS account ID for validation (prevents deploying to wrong account)"
-  type        = string
-
-  validation {
-    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
-    error_message = "AWS account ID must be exactly 12 digits."
-  }
+  default     = "us-east-1"
 }
 
 variable "project_name" {
@@ -37,21 +28,13 @@ variable "availability_zones" {
   default     = ["us-east-1a", "us-east-1b"]
 }
 
-# ECR Configuration
-variable "ecr_repository_arns" {
-  description = "List of ECR repository ARNs for IAM permissions"
-  type        = list(string)
-}
-
-# ECS Services - Simplified with sensible defaults
+# ECS Services Specs
 variable "ecs_services" {
   description = "Map of ECS service configurations (minimal required fields, rest use sensible defaults)"
   type = map(object({
     # Required fields
-    container_name      = string
-    container_image     = string
-    container_image_tag = string
-    container_port      = number
+    container_name = string
+    container_port = number
 
     # Optional with defaults
     task_cpu                  = optional(string, "256")
@@ -63,12 +46,22 @@ variable "ecs_services" {
     health_check_command      = optional(list(string), null)
     health_check_grace_period = optional(number, 60)
   }))
+  default = {
+    web = {
+      container_name       = "web"
+      container_port       = 80
+      task_cpu             = "256"
+      task_memory          = "512"
+      health_check_command = ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+    }
+  }
 }
 
 # HTTPS/TLS Configuration
 variable "domain_name" {
   description = "Primary domain name for SSL certificate (e.g., example.com). Leave empty to disable HTTPS."
   type        = string
+  default     = "msdeleyto.es"
 }
 
 # ALB routing configuration (only used when enable_alb = true)
@@ -86,4 +79,12 @@ variable "alb_routes" {
     unhealthy_threshold   = optional(number, 3)
     deregistration_delay  = optional(number, 30)
   }))
+  default = {
+    web = {
+      path_pattern      = "/*"
+      priority          = 100
+      host_header       = "msdeleyto.es"
+      health_check_path = "/"
+    }
+  }
 }
