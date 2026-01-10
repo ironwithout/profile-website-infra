@@ -1,52 +1,38 @@
 # Network Module
 
-Creates VPC infrastructure for ECS Fargate deployment.
+Creates the VPC, subnets, internet gateway, and security groups for ECS Fargate infrastructure.
 
-## Overview
+## Resources Created
 
-This module creates the VPC infrastructure including VPC, subnets, internet gateway, route tables, and security groups.
+- **VPC** with DNS support enabled
+- **Public subnets** (one per AZ) with auto-assign public IP
+- **Private subnets** (one per AZ) for future use
+- **Internet Gateway** with route table for public subnets
+- **Security Groups** for ALB and ECS tasks
 
-## Implementation
+## Security Group Configuration
 
-- **VPC**: Configured CIDR block with DNS support enabled
-- **Public Subnets**: Internet-facing subnets for ALB with auto-assigned public IPs
-- **Private Subnets**: Internal subnets for ECS tasks (optional, can use public for cost savings)
-- **Internet Gateway**: Provides internet access to public subnets
-- **Security Groups**: 
-  - ALB Security Group: Allows HTTP/HTTPS from internet
-  - ECS Security Group: Allows traffic from ALB using source-based referencing
-
-## Usage
-```hcl
-module "network" {
-  source = "./modules/network"
-
-  project_name       = "myapp"
-  vpc_cidr           = "10.0.0.0/16"
-  availability_zones = ["us-east-1a", "us-east-1b"]
-}
-```
+| Security Group | Inbound | Outbound |
+|----------------|---------|----------|
+| ALB | 80, 443 from 0.0.0.0/0 | All traffic |
+| ECS | 80 from ALB SG only | All traffic |
 
 ## Inputs
-| Name | Description | Type |
-|------|-------------|------|
-| project_name | Project name for resource naming | string |
-| vpc_cidr | CIDR block for VPC | string |
-| availability_zones | List of AZs for subnet distribution | list(string) |
+
+| Name | Description | Type | Required |
+|------|-------------|------|----------|
+| `project_name` | Project name for resource naming | `string` | Yes |
+| `vpc_cidr` | CIDR block for VPC | `string` | Yes |
+| `availability_zones` | List of AZs for subnet distribution | `list(string)` | Yes |
 
 ## Outputs
+
 | Name | Description |
 |------|-------------|
-| vpc_id | VPC ID |
-| vpc_cidr | VPC CIDR block |
-| public_subnet_ids | List of public subnet IDs |
-| private_subnet_ids | List of private subnet IDs |
-| alb_security_group_id | ALB security group ID |
-| ecs_security_group_id | ECS security group ID |
-| internet_gateway_id | Internet Gateway ID |
-
-## Security Pattern
-Uses source-based security group referencing instead of CIDR blocks for internal traffic (ALB → ECS), following AWS best practices.
-
-## Cost Optimization
-Public subnets configured with auto-assign public IP to avoid NAT Gateway costs.
+| `vpc_id` | VPC ID |
+| `vpc_cidr` | VPC CIDR block |
+| `public_subnet_ids` | List of public subnet IDs |
+| `private_subnet_ids` | List of private subnet IDs |
+| `alb_security_group_id` | Security group ID for ALB |
+| `ecs_security_group_id` | Security group ID for ECS tasks |
+| `internet_gateway_id` | Internet Gateway ID |

@@ -1,319 +1,239 @@
-# AWS ECS Fargate Infrastructure as Code
+# AWS ECS Fargate Infrastructure
 
-Modular Terraform infrastructure for deploying containerized applications on AWS ECS Fargate with optional Application Load Balancer and full CloudWatch observability.
+Terraform-based infrastructure for deploying containerized web services on AWS using ECS Fargate, with HTTPS, WAF protection, and automated CI/CD deployments.
 
 ## Architecture
 
 ```
-Internet → [ALB (HTTP/HTTPS)] → ECS Fargate Tasks → ECR
-              ↓                        ↓
-         CloudWatch               CloudWatch Logs
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Internet  │────▶│     WAF     │────▶│     ALB     │
+└─────────────┘     └─────────────┘     └──────┬──────┘
+                                               │
+                    ┌──────────────────────────┼──────────────────────────┐
+                    │ VPC                      │                          │
+                    │  ┌───────────────────────▼───────────────────────┐  │
+                    │  │ Public Subnets                                │  │
+                    │  │  ┌─────────────┐      ┌─────────────┐         │  │
+                    │  │  │ ECS Fargate │      │ ECS Fargate │         │  │
+                    │  │  │   Task(s)   │      │   Task(s)   │         │  │
+                    │  │  └─────────────┘      └─────────────┘         │  │
+                    │  └───────────────────────────────────────────────┘  │
+                    └─────────────────────────────────────────────────────┘
 ```
 
-**Flexible Deployment Options**:
-- Direct container access (no ALB) for minimal setup
-- ALB with path/host-based routing for web applications
-- Public or private subnet placement with auto-configuration
-
-**Module Architecture**: Root orchestrates reusable, self-contained modules.
+**Key Components:**
+- **VPC** with public/private subnets across 2 AZs
+- **Application Load Balancer** with HTTPS (ACM certificate)
+- **WAF** with AWS Managed Rules (OWASP Top 10, bad inputs, IP reputation)
+- **ECS Fargate** cluster running containerized services
+- **CloudWatch** logs with Container Insights enabled
 
 ## Prerequisites
 
+- AWS Account with admin access
+- AWS CLI installed and configured
 - Terraform >= 1.5.0
-- AWS CLI configured with credentials
-- AWS account with appropriate permissions
+- GitHub repository (for CI/CD)
+
+## Initial Setup
+
+### 1. Create S3 Bucket for Terraform State
+
+```bash
+# Replace with your desired bucket name and region
+aws s3api create-bucket \
+  --bucket terraform-state-<project-name> \
+  --region us-east-1
+
+# Enable versioning (recommended)
+aws s3api put-bucket-versioning \
+  --bucket terraform-state-<project-name> \
+  --versioning-configuration Status=Enabled
+```
+
+### 2. Set Up GitHub OIDC Authentication in AWS
+
+This allows GitHub Actions to authenticate without long-lived credentials.
+
+#### Create OIDC Identity Provider
+
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+```
+
+#### Create IAM Role for GitHub Actions
+
+1. Create the trust policy file (`github-trust-policy.json`):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
+    },
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {
+      "StringEquals": {
+        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+      },
+      "StringLike": {
+        "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:*"
+      }
+    }
+  }]
+}
+```
+
+2. Create the role:
+
+```bash
+aws iam create-role \
+  --role-name github-actions-terraform \
+  --assume-role-policy-document file://github-trust-policy.json
+```
+
+### 3. Create and Attach IAM Policies
+
+Use the setup script to create least-privilege policies from module definitions and attach them to the role:
+
+```bash
+# Creates policies from modules/*/iam-policy.json and attaches to the role
+./tooling/setup_cicd_iam.sh --type role --name github-actions-terraform
+```
+
+For local development with an IAM user instead:
+
+```bash
+./tooling/setup_cicd_iam.sh --type user --name terraform-deployer
+```
+
+### 4. Configure GitHub Repository Secrets
+
+Add these secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AWS_ROLE_ARN` | ARN of the GitHub Actions IAM role | `arn:aws:iam::123456789012:role/github-actions-terraform` |
+| `AWS_REGION` | AWS region for deployment | `aws-region` |
+| `S3_STATE_BUCKET` | S3 bucket for Terraform state | `terraform-state-bucket` |
+| `S3_STATE_KEY` | State file path in bucket | `terraform-state-key` |
+
+### 5. Configure Terraform Variables
+
+Copy and customize the backend configuration:
+
+```bash
+cp backend.hcl.example backend.hcl
+# Edit backend.hcl with your S3 bucket details
+```
+
+Update `variables.tf` or create a `terraform.tfvars` file:
+
+```hcl
+project_name = "my-project"
+domain_name  = "example.com"
+aws_region   = "aws-region"
+```
+
+### 6. Initialize and Deploy
+
+#### Local Deployment
+
+```bash
+# Initialize Terraform
+terraform init -backend-config=backend.hcl
+
+# Plan changes
+terraform plan -out=tfplan
+
+# Apply changes
+terraform apply tfplan
+```
+
+#### CI/CD Deployment
+
+Push to `main` branch to trigger automatic deployment via GitHub Actions.
+
+## Adding New Services
+
+1. Add ECR repository ARN to `local.ecr_repository_arns` in `main.tf`
+2. Add container image to `local.ecs_service_images` in `main.tf`
+3. Add service configuration to `ecs_services` variable
+4. Add ALB routing configuration to `alb_routes` variable
+
+Example service configuration:
+
+```hcl
+# In terraform.tfvars or variables.tf
+ecs_services = {
+  api = {
+    container_name = "api"
+    container_port = 8080
+    task_cpu       = "512"
+    task_memory    = "1024"
+    desired_count  = 2
+  }
+}
+
+alb_routes = {
+  api = {
+    path_pattern      = "/api/*"
+    priority          = 10
+    health_check_path = "/api/health"
+  }
+}
+```
+
+## Module Overview
+
+| Module | Purpose |
+|--------|---------|
+| `network` | VPC, subnets, security groups, internet gateway |
+| `iam` | ECS task execution and task roles with least-privilege ECR access |
+| `acm` | SSL/TLS certificates for HTTPS |
+| `alb` | Application Load Balancer with path-based routing |
+| `waf` | Web Application Firewall with AWS Managed Rules |
+| `ecs` | Fargate cluster, task definitions, services |
 
 ## Project Structure
 
 ```
-.
-├── main.tf                 # Root orchestration layer
-├── variables.tf            # Root input variables
-├── outputs.tf              # Root outputs
-├── data.tf                 # Data sources
-├── versions.tf             # Provider versions & default tags
-├── backend.tf              # S3 backend config
-├── AGENTS.md               # AI agent guidelines
-├── modules/                # Self-contained infrastructure modules
-│   ├── network/            # VPC, subnets, security groups
-│   ├── iam/                # ECS task execution and task roles
-│   ├── ecs/                # Fargate cluster and services
-│   ├── alb/                # Application Load Balancer (optional)
-│   ├── acm/                # SSL/TLS certificates (optional)
-│   ├── waf/                # Web Application Firewall (optional)
-│   └── s3/                 # IAM policy for backend state (no resources)
+├── main.tf              # Root module orchestrating all sub-modules
+├── variables.tf         # Input variables with defaults
+├── outputs.tf           # Output values
+├── backend.tf           # S3 backend configuration
+├── data.tf              # Data sources
+├── versions.tf          # Provider version constraints
+├── backend.hcl.example  # Backend config template
+├── modules/
+│   ├── network/         # VPC and networking
+│   ├── iam/             # IAM roles and policies
+│   ├── acm/             # SSL certificates
+│   ├── alb/             # Load balancer
+│   ├── waf/             # Web application firewall
+│   └── ecs/             # ECS cluster and services
 └── tooling/
-    └── create_iam_policies.sh  # IAM policy management script
+    └── setup_cicd_iam.sh  # CI/CD IAM policy setup script
 ```
 
-**Module Structure**: Each module contains:
-- `main.tf` - Resource definitions
-- `variables.tf` - Module inputs
-- `outputs.tf` - Module outputs
-- `iam-policy.json` - IAM permissions required
-- `README.md` - Documentation
+## Cost Considerations
 
-**Key Patterns**:
-- Root orchestrates modules, never defines resources directly
-- Each module is self-contained with own IAM policy
-- S3 backend for remote state storage
-- Simplified variable interface with sensible defaults
+- **No NAT Gateway**: ECS tasks run in public subnets with public IPs to avoid NAT Gateway costs (~$32/month per AZ)
+- **Fargate Spot**: Consider using Fargate Spot for non-production workloads (up to 70% savings)
+- **Right-sizing**: Default task size is 256 CPU / 512 MB memory - adjust based on actual needs
 
-## Quick Start
+## Security Features
 
-### 1. Backend Setup (First Time Only)
-
-Create an S3 bucket for Terraform state:
-
-```bash
-# Set your values
-export AWS_REGION="us-east-1"
-export BUCKET_NAME="bucket-name"
-
-# Create bucket
-aws s3api create-bucket --bucket "${BUCKET_NAME}" --region "${AWS_REGION}"
-
-# Enable versioning (for state recovery)
-aws s3api put-bucket-versioning \
-  --bucket "${BUCKET_NAME}" \
-  --versioning-configuration Status=Enabled
-
-# Enable encryption
-aws s3api put-bucket-encryption \
-  --bucket "${BUCKET_NAME}" \
-  --server-side-encryption-configuration '{
-    "Rules": [{
-      "ApplyServerSideEncryptionByDefault": {
-        "SSEAlgorithm": "AES256"
-      }
-    }]
-  }'
-```
-
-### 2. Configure IAM Permissions
-
-Each module has an `iam-policy.json` defining required permissions. Use the policy management script:
-
-```bash
-# Combine all module policies
-./tooling/create_iam_policies.sh
-
-# This creates/updates policies for each module:
-# - terraform-profile-website-network
-# - terraform-profile-website-iam
-# - terraform-profile-website-ecs
-# - terraform-profile-website-alb
-# - terraform-profile-website-s3
-
-# Attach policies to your IAM user/role via AWS Console or CLI
-```
-
-### 3. Configure Variables
-
-```bash
-cp terraform.tfvars.example terraform.tfvars
-cp backend.hcl.example backend.hcl
-
-# Edit backend.hcl with your bucket name
-# Edit terraform.tfvars with your configuration:
-#   - AWS account ID and region
-#   - ECR repository ARNs
-#   - ECS service definitions
-#   - ALB, ACM, WAF configuration
-```
-
-### 4. Initialize Terraform
-
-```bash
-terraform init -backend-config=backend.hcl
-```
-
-### 5. Deploy
-
-```bash
-terraform plan -var-file=terraform.tfvars
-terraform apply -var-file=terraform.tfvars
-```
-
-## Key Concepts
-
-### Naming Convention
-
-All resources follow: `${project_name}-<resource-type>`
-
-Examples:
-- VPC: `myapp-vpc`
-- ECS Cluster: `myapp-ecs-cluster`
-- ALB: `myapp-alb`
-
-### Simplified Service Configuration
-
-ECS services use a minimal configuration with sensible defaults:
-
-```hcl
-ecs_services = {
-  api = {
-    # Required only
-    container_name  = "api"
-    container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-api"
-    container_port  = 3000
-    
-    # Optional - override defaults
-    task_cpu           = "512"    # default: "256"
-    task_memory        = "1024"   # default: "512"
-    desired_count      = 2        # default: 1
-    log_retention_days = 3        # default: 7
-  }
-}
-```
-
-**Auto-configuration**:
-- `use_private_subnets`: Defaults to `true` if ALB enabled, `false` otherwise
-- `assign_public_ip`: Defaults to `false` for private subnets, `true` for public
-
-### Application Load Balancer
-
-The ALB module is **optional** and conditionally deployed:
-
-```hcl
-# Disable for direct container access
-enable_alb = false
-
-# Enable with path/host-based routing
-enable_alb = true
-alb_routes = {
-  api = {
-    path_pattern = "/api/*"
-    priority     = 100
-  }
-  web = {
-    host_header  = "app.example.com"
-    path_pattern = "/*"
-    priority     = 200
-  }
-}
-```
-
-**Features**:
-- HTTP listener (port 80) with configurable routing
-- Health checks per service
-- Integration with ECS target groups
-- Deletion protection (configurable)
-
-### Backend Configuration
-
-Terraform state is stored remotely in S3 via partial backend configuration:
-- Common backend settings in `backend.tf`
-- Deployment-specific settings in `backend.hcl`
-
-```hcl
-# backend.tf
-terraform {
-  backend "s3" {
-    # bucket, region, and key loaded from backend.hcl
-    use_lockfile = true
-  }
-}
-
-# backend.hcl
-bucket = "terraform-state-<ACCOUNT_ID>"
-region = "us-east-1"
-key    = "terraform.tfstate"
-```
-
-### Implemented Modules
-
-| Module | Description |
-|--------|-------------|
-| **network** | VPC, public subnets, security groups with source-based rules |
-| **iam** | ECS task execution role, task role with ECR permissions |
-| **ecs** | Fargate cluster, services, CloudWatch logs |
-| **alb** | Application Load Balancer with path/host routing (optional) |
-| **s3** | IAM permissions for Terraform backend (no resources) |
-
-Each module includes:
-- Complete resource definitions in `main.tf`
-- IAM policy document in `iam-policy.json`
-- Comprehensive README with examples
-
-## Development
-
-### Testing & Validation
-
-```bash
-# Format code
-terraform fmt -recursive
-
-# Validate configuration
-terraform validate
-
-# Plan with configuration
-terraform plan -var-file=terraform.tfvars
-
-# Security scan (optional - requires checkov)
-checkov -d .
-
-# Lint (optional - requires tflint)
-tflint --recursive
-```
-
-### IAM Policy Management
-
-When adding or modifying modules:
-
-1. Update the module's `iam-policy.json`
-2. Run policy generation script:
-   ```bash
-   ./tooling/create_iam_policies.sh $user
-   ```
-3. Script will create/update IAM policy versions automatically
-4. Policies are versioned (max 5 versions per policy)
-
-See module READMEs and [AGENTS.md](AGENTS.md) for detailed IAM workflows.
-
-### Contributing
-
-1. Create feature branch from `main`
-2. Run `terraform fmt -recursive` and `terraform validate`
-3. Test changes thoroughly
-4. Generate plan for review: `terraform plan -var-file=terraform.tfvars -out=plan.out`
-5. Submit PR with plan output
-6. Apply only after approval
-
-## Best Practices
-
-### Security
-
-- ✅ Never commit `.tfvars` or `.hcl` files with real values (gitignored)
-- ✅ Each module defines minimum IAM permissions in `iam-policy.json`
-- ✅ S3 backend uses encryption, versioning, and public access block
-- ✅ Security groups use source-based references (not CIDR blocks)
-- ✅ Task role has minimal ECR permissions (read-only)
-- 🔒 Store secrets in AWS SSM Parameter Store or Secrets Manager
-- 🔒 Enable CloudTrail for audit logging
-- 🔒 Review security groups before production deployment
-- 🔒 Enable ALB deletion protection for production
-
-### Cost Optimization
-
-- Use `enable_alb = false` in dev to avoid ALB costs (~$16/month)
-- Deploy dev services to public subnets (no NAT Gateway needed)
-- Use Fargate Spot for non-critical workloads (up to 70% savings)
-- Adjust `log_retention_days` based on needs (3 for dev, 30+ for prod)
-- Consolidate multiple apps behind single ALB
-- Set appropriate `desired_count` per environment (1 for dev, 2+ for prod)
-
-## Documentation
-
-- **[AGENTS.md](AGENTS.md)** - AI agent guidelines, module patterns, IAM workflows
-- **Module READMEs**:
-  - [network/](modules/network/README.md) - VPC, subnets, security groups
-  - [iam/](modules/iam/README.md) - ECS task execution and task roles
-  - [ecs/](modules/ecs/README.md) - Fargate cluster and services
-  - [alb/](modules/alb/README.md) - Application Load Balancer
-  - [acm/](modules/acm/README.md) - SSL/TLS certificates
-  - [waf/](modules/waf/README.md) - Web Application Firewall
-  - [s3/](modules/s3/README.md) - Backend state IAM policy
+- **WAF Protection**: OWASP Top 10, known bad inputs, IP reputation blocking
+- **HTTPS Only**: ALB redirects HTTP to HTTPS
+- **Least-Privilege IAM**: Task roles scoped to specific ECR repositories
+- **No Long-Lived Credentials**: GitHub Actions uses OIDC for AWS authentication
+- **Circuit Breaker**: ECS services automatically rollback failed deployments
 
 ## License
 

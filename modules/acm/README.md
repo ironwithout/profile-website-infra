@@ -1,54 +1,35 @@
 # ACM Module
 
-Manages SSL/TLS certificates for HTTPS using AWS Certificate Manager (ACM).
+Creates SSL/TLS certificates for HTTPS using AWS Certificate Manager with DNS validation.
 
-## Overview
+## Resources Created
 
-This module creates an ACM certificate with DNS validation. Since DNS is managed by Cloudflare (not Route 53), validation records must be created manually in Cloudflare.
+- **ACM Certificate** with DNS validation method
+- **Certificate Validation** resource (waits for validation to complete)
 
-## Features
+## DNS Validation
 
-- SSL/TLS certificate with DNS validation
-- Support for www subdomain as Subject Alternative Name (SAN)
-- Outputs validation records for manual Cloudflare setup
-- Automatic certificate renewal (once validated)
+Since DNS is managed externally (e.g., Cloudflare), validation records must be created manually using the `domain_validation_options` output.
 
-## Usage
-
-```hcl
-module "acm" {
-  source = "./modules/acm"
-
-  project_name = var.project_name
-  domain_name  = "example.com"
-  include_www  = true  # Adds www.example.com
-}
+Example validation record:
+```
+Name:  _abc123.example.com
+Type:  CNAME
+Value: _xyz789.acm-validations.aws.
 ```
 
-## DNS Validation Workflow
+## Inputs
 
-1. **Apply Terraform**: Creates certificate request
-2. **Check Outputs**: `terraform output` shows validation records
-3. **Add to Cloudflare**:
-   - Log into Cloudflare DNS
-   - Add CNAME record(s) with values from output
-   - **IMPORTANT**: Disable proxy (orange cloud OFF) - must be "DNS only"
-4. **Wait**: Certificate validates automatically in 5-30 minutes
-5. **Verify**: Check `certificate_status` output
-
-## Important Notes
-
-- **First-time setup**: Certificate validation can take up to 30 minutes
-- **Cloudflare proxy**: Must be disabled for validation CNAME records
-- **Automatic renewal**: Once validated, AWS handles renewal automatically
-- **Multi-domain**: Both apex and www domains validated with same certificate
+| Name | Description | Type | Required |
+|------|-------------|------|----------|
+| `project_name` | Project name (kebab-case) | `string` | Yes |
+| `domain_name` | Primary domain name for the certificate | `string` | Yes |
 
 ## Outputs
 
-- `certificate_arn`: Use this for ALB HTTPS listener
-- `domain_validation_options`: DNS records to add in Cloudflare
-- `validation_instructions`: Step-by-step guide
-
-## Cost
-
-**$0/month** - ACM public certificates are free
+| Name | Description |
+|------|-------------|
+| `certificate_arn` | ARN of the ACM certificate |
+| `certificate_domain_name` | Domain name of the certificate |
+| `certificate_status` | Status of the certificate |
+| `domain_validation_options` | DNS validation records to create externally |
