@@ -71,7 +71,7 @@ To enable GitHub Actions to authenticate with AWS without long-lived credentials
    - Provider URL: `https://token.actions.githubusercontent.com`
    - Audience: `sts.amazonaws.com`
 
-2. **Create IAM Role** with trust policy:
+2. **Create IAM Role** with trust policy (replace `<ACCOUNT_ID>`, `<OWNER>`, `<REPO>`):
    ```json
    {
      "Version": "2012-10-17",
@@ -93,12 +93,18 @@ To enable GitHub Actions to authenticate with AWS without long-lived credentials
    }
    ```
 
-3. **Attach permissions** to the role using policies from `modules/*/iam-policy.json`
+3. **Attach permissions** using the setup script:
+   ```bash
+   ./tooling/setup_cicd_iam.sh --type role --name github-actions-terraform
+   ```
 
 4. **Configure GitHub secrets**: `AWS_ROLE_ARN`, `AWS_REGION`, `S3_STATE_BUCKET`, `S3_STATE_KEY`
 
 ### IAM Policy Management
-Use [tooling/create_iam_policies.sh](tooling/create_iam_policies.sh) to create least-privilege IAM policies from module `iam-policy.json` files for CI/CD roles.
+Use [tooling/setup_cicd_iam.sh](tooling/setup_cicd_iam.sh) to create/update IAM policies from module `iam-policy.json` files and attach them to a user or role:
+```bash
+./tooling/setup_cicd_iam.sh --type <user|role> --name <name>
+```
 
 ## Security Configuration
 
