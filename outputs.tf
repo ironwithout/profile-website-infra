@@ -62,16 +62,6 @@ output "acm_certificate_status" {
   value       = module.acm.certificate_status
 }
 
-output "acm_validation_records" {
-  description = "DNS validation records to add in registar"
-  value       = module.acm.domain_validation_options
-}
-
-output "acm_validation_instructions" {
-  description = "Instructions for validating certificate in Cloudflare"
-  value       = module.acm.validation_instructions
-}
-
 # WAF outputs (conditional)
 output "waf_web_acl_arn" {
   description = "ARN of the WAF Web ACL"
