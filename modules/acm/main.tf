@@ -33,15 +33,15 @@ resource "aws_acm_certificate" "main" {
 # Certificate Validation (outputs only)
 ##################################################
 
-# Note: Since DNS is managed by Cloudflare, validation records
-# must be created manually in Cloudflare using the outputs.
+# Note: Since DNS is managed by an external domain register, validation records
+# must be created manually in the external domain register using the aws certificate resource values.
 # Terraform will wait for validation to complete.
 
 resource "aws_acm_certificate_validation" "main" {
   certificate_arn = aws_acm_certificate.main.arn
 
   # Manual validation - no validation_record_fqdns needed
-  # User must create DNS records in Cloudflare first
+  # User must create DNS records in the domain register first
 
   timeouts {
     create = "45m"
