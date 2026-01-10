@@ -1,62 +1,31 @@
 # S3 Module
 
-IAM policy for Terraform backend state management in S3.
-
-## Overview
-
-This module contains the IAM policy required for Terraform to manage its remote state in an S3 bucket. The policy grants necessary permissions for the Terraform deployer role to read, write, and manage state files.
+IAM policy for using S3 as a Terraform state backend.
 
 ## Purpose
 
-This is **not** a Terraform module that creates S3 resources. Instead, it defines the IAM permissions needed for:
+This module contains the IAM policy required for Terraform to store and manage state files in S3. It grants the minimum permissions needed for state locking and versioning.
 
-- **State Storage**: Reading and writing Terraform state files to S3
-- **State Locking**: Supporting state locking via DynamoDB (when configured)
-- **Version Management**: Accessing versioned state files for rollback capabilities
+## Permissions
 
-## IAM Policy
+| Permission | Resource | Purpose |
+|------------|----------|---------|
+| `s3:ListBucket` | Bucket | List objects, check if state exists |
+| `s3:GetBucketVersioning` | Bucket | Verify versioning is enabled |
+| `s3:GetObject` | Objects | Read current state |
+| `s3:PutObject` | Objects | Write updated state |
+| `s3:DeleteObject` | Objects | Remove state lock file (`.tflock`) |
+| `s3:GetObjectVersion` | Objects | Access previous state versions |
 
-The `iam-policy.json` file defines permissions for:
+## Resource Scope
 
-### Bucket-Level Operations
-- `s3:ListBucket`: List objects in the state bucket
-- `s3:GetBucketVersioning`: Check bucket versioning configuration
+The policy is scoped to buckets matching `terraform-state-profile-website*`:
 
-### Object-Level Operations
-- `s3:GetObject`: Read state files
-- `s3:PutObject`: Write updated state files
-- `s3:DeleteObject`: Remove old state files
-- `s3:GetObjectVersion`: Access specific versions of state files
-
-## Usage
-
-This policy should be applied to your IAM user or role that executes Terraform commands:
-
-1. The policy is defined in `iam-policy.json`
-2. Combined with other module policies via `tooling/create_iam_policies.sh`
-3. Applied as a policy version to your IAM principal
-
-## Backend Configuration
-
-The S3 backend is configured in the root `backend.tf` with deployment-specific settings in `backend.hcl`:
-
-```hcl
-# backend.hcl
-bucket = "terraform-state-<ACCOUNT_ID>-<REGION>"
-region = "us-east-1"
-key    = "terraform.tfstate"
+```
+arn:aws:s3:::terraform-state-profile-website*      # Bucket-level
+arn:aws:s3:::terraform-state-profile-website*/*    # Object-level
 ```
 
-## Prerequisites
+## State Locking
 
-- S3 bucket for state storage must exist (created manually or via foundational infrastructure)
-- Bucket name format: `terraform-state-ACCOUNT_ID-REGION`
-- Bucket versioning should be enabled for state history
-- DynamoDB table for state locking (optional but recommended)
-
-## Security Considerations
-
-- Policy uses least-privilege access scoped to the specific state bucket
-- State files may contain sensitive information - ensure bucket encryption is enabled
-- Restrict bucket access via bucket policies and IAM permissions
-- Enable versioning for state recovery capabilities
+This project uses S3 native locking (`use_lockfile = true` in `backend.tf`) instead of DynamoDB. The `s3:DeleteObject` permission is required to release the `.tflock` file after operations complete.
