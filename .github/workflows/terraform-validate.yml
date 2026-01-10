@@ -43,6 +43,7 @@ jobs:
           mask-aws-account-id: true
 
       - name: Terraform Init
+        id: init
         run: |
           terraform init \
             -backend-config="bucket=${{ secrets.S3_STATE_BUCKET }}" \
@@ -114,6 +115,7 @@ jobs:
             | Format   | ${getIcon('${{ steps.fmt.outcome }}')} |
             | Init     | ${getIcon('${{ steps.init.outcome }}')} |
             | Validate | ${getIcon('${{ steps.validate.outcome }}')} |
+            | Plan     | ${getIcon('${{ steps.plan.outcome }}')} |
             | TFLint   | ${getIcon('${{ steps.tflint.outcome }}')} |
 
             *Pushed by: @${{ github.actor }}*`;
@@ -138,4 +140,5 @@ jobs:
           echo "| Format | ${{ steps.fmt.outcome }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Init | ${{ steps.init.outcome }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Validate | ${{ steps.validate.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan | ${{ steps.plan.outcome }} |" >> $GITHUB_STEP_SUMMARY
           echo "| TFLint | ${{ steps.tflint.outcome }} |" >> $GITHUB_STEP_SUMMARY
